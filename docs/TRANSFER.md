@@ -135,12 +135,15 @@ gh api -X POST repos/quaid/lmcache-blogs/transfer -f new_owner=LMCache
    Variables) to the new board's number. Leave `BOARD_OWNER` unset; it defaults
    to the repository owner, which is now `LMCache`.
 
-3. **Replace `PROJECT_TOKEN` with a narrower one.** This is the upgrade the
-   move unlocks. A user-owned board could only be reached by a *classic* token
-   with `project` scope, which cannot be narrowed below "every project this
-   account can touch". An **org-owned** board can be reached by a **fine-grained
-   PAT with the org-level `Projects` permission scoped to this one repository**,
-   or by a GitHub App. Swap it, then revoke the old classic token.
+3. **Keep the classic `PROJECT_TOKEN`.** It survives the transfer and works
+   against the org board — it is what routed `orgs/LMCache/projects/6` after
+   this move. Do not expect to swap it for a fine-grained token: the org-level
+   `Projects` permission is offered only to org **owners**, and a Member creating
+   one with `LMCache` as resource owner will not see it.
+
+   To get off a personal token, ask an org owner to install a **GitHub App** on
+   the org with Projects permission. That is the long-term answer; until then the
+   classic token is fine.
 
 4. **Let the sweep rebuild the cards.** Copying a board does not bring its
    items, so the new board starts empty. The hourly sweep adds every open issue

@@ -14,16 +14,18 @@ runtime rather than compiled in — see [Locating the board](#locating-the-board
 workflow permission that grants it; Projects V2 is outside the repository
 permission model. So the workflow needs its own token.
 
-### Which token, and it depends on who owns the board
+### Which token, and it depends on who owns the board — and who you are
 
 Fine-grained PATs expose a `Projects` permission **only under Organization
-permissions**. There is no account-level equivalent. That one fact decides the
-answer:
+permissions**. There is no account-level equivalent. And even for an
+organization, the permission is only offered to someone who can use it there:
 
-| Board owner | Token |
-|---|---|
-| **An organization** | a **fine-grained** PAT with the org-level `Projects` permission, scoped to this one repository — or a GitHub App installation |
-| **A user account** | a **classic** PAT with the `project` scope, and nothing narrower exists |
+| Board owner | You are | Token |
+|---|---|---|
+| **A user account** | the owner | a **classic** PAT with the `project` scope; nothing narrower exists |
+| **An organization** | a **Member** | a **classic** PAT with the `project` scope — the org-level `Projects` permission is not offered to you |
+| **An organization** | an **Owner** | a **fine-grained** PAT with the org-level `Projects` permission, scoped to this one repository |
+| **An organization** | — | a **GitHub App** installed on the org by an owner. No personal token at all |
 
 For a user-owned board a fine-grained token has no way to express "read and
 write my projects". The permission is not hidden somewhere in the UI; it does
@@ -31,12 +33,21 @@ not exist, and it is a
 [long-standing open request](https://github.com/orgs/community/discussions/36441)
 rather than an oversight.
 
-**This is a real argument for an org-owned board.** A classic `project` token
-cannot be narrowed to one project or one repository: it can read and write
-*every* project the account can reach. Moving the board under an organization is
-what makes the narrow credential available — it is not merely tidier.
+The Member row was found the hard way. After this repo moved to `LMCache`, an
+LMCache **Member** created a fine-grained token with `LMCache` as the resource
+owner: the org appeared in the dropdown, but `Projects` was not among the
+Organization permissions. The same page with an org he *owns* as the resource
+owner offered `Projects` and many more. So an org-owned board does not by itself
+make the narrow token available — it needs an org owner to create it.
 
-So, for a user-owned board:
+**The classic token works, and it is what routes the board today.** Its cost is
+breadth: `project` scope cannot be narrowed to one project or one repository, so
+it can read and write every project its account can reach. The fix for that is
+a **GitHub App installed on the org** — owned by the org rather than a person,
+narrow by construction, and unaffected by anyone leaving. That needs an org
+owner to set up.
+
+So, unless you own the org that owns the board:
 
 1. Create a **classic** personal access token with the **`project`** scope
    (Settings → Developer settings → Personal access tokens → Tokens (classic)).

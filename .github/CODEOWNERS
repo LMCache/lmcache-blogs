@@ -1,2 +1,5 @@
+# Every change needs a review from a maintainer. See MAINTAINERS.md.
+* @quaid
+
 # Editor review for written posts submitted as PRs.
 /content/drafts/ @quaid

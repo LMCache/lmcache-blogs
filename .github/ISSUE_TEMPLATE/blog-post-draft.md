@@ -1,35 +1,30 @@
 ---
 name: Blog post draft — needs technical review
-about: You wrote the post, but the technical content still wants checking before it goes out.
+about: A written post whose technical content needs review before it is published.
 title: "[blog][draft] "
 labels: ["blog", "draft", "needs-tech-review"]
 ---
 
 <!--
-USE THIS ONE IF THE POST IS WRITTEN BUT THE TECHNICAL CONTENT STILL NEEDS
-CHECKING.
+USE THIS TEMPLATE IF THE POST IS WRITTEN BUT THE TECHNICAL CONTENT IS NOT
+CHECKED.
 
-"Draft" here means exactly that: the writing is done, the verification is
-not. Maybe you wrote up someone else's work, or you are describing a system
-you do not own, or you would just rather a second pair of eyes confirmed the
-details before your name is on it.
+For example: you wrote about someone else's work, you describe a system you
+do not own, or you want a second person to confirm the details.
 
-Pick a different template if:
+Use a different template if:
 
-  - the technical content is already sound, because you built the thing or
-    because someone already reviewed it
-    -> "Finished blog post - ready for copyedit"
+  - the technical content is already correct, because you built the feature
+    or someone already reviewed it
+    -> "Finished blog post - ready for copyedit" (most written posts)
   - you have notes or a PR and want someone else to write the post
     -> "Blog post from a PR"
 
-Most posts that arrive already written belong in that first one. This
-template is for the case where a technical review is genuinely wanted.
+Your card skips Idea, Claimed, and Drafting. It goes to the review lane you
+choose below.
 
-Your card skips Idea, Claimed, and Drafting and lands in the review lane you
-pick below.
-
-Do not delete any headings. The pipeline reads them by name. Leave a heading
-empty rather than removing it.
+Do not delete or rename any heading. The pipeline reads them by name.
+Leave a section empty instead.
 -->
 
 ```yaml
@@ -38,7 +33,6 @@ entry_lane: editorial # editorial | technical
 author:
 language: en          # the language the DRAFT is written in: en, zh, ko, ja, de...
 post_type: how-to     # how-to | why-to | deep-dive | release-note
-placement: lmcache    # lmcache | tensormesh — see "Placement" below
 pr:                   # if it is about a PR; leave blank if not
 repo: LMCache/LMCache
 reader: # who is this for? e.g. "someone running vLLM in production and hitting TTFT limits"
@@ -47,123 +41,95 @@ publish_by: # date, or leave blank
 
 ## Where the draft is [CORE]
 
-<!-- A link, or say "attached" and drag the file onto this issue. Google Doc,
-markdown file, HTML, Notion page — whatever you have. If it is a doc, share
-it so anyone at Tensormesh with the link can comment.
+<!-- A link, or write "attached" and drag the file onto this issue. Any
+format: Google Doc, markdown, HTML, Notion. If it is a doc, share it so
+that anyone with the link can comment.
 
-A pull request that adds the post under content/drafts/ also works, and is the
-easiest to review line by line. See content/README.md for the layout.
+A pull request that adds the draft under content/drafts/ also works, and is
+the easiest to review line by line. See content/README.md for the layout.
 
-If the draft lives in more than one place, say which one is authoritative.
-Two versions of a finished post is the most expensive kind of confusion
-here. -->
+If the draft is in more than one place, say which copy is the main one. -->
 
 ## What it says in one sentence [CORE]
 
-<!-- The hallway version. Used for title candidates and the meta
-description, and it tells a reviewer what they are about to read. -->
+<!-- One plain sentence. We use it for the title, the meta description,
+and to tell the reviewer what the post is about. -->
 
 ## Which lane it should enter [CORE]
 
-<!-- Set `entry_lane` above. One sentence of why is plenty.
+<!-- Set `entry_lane` above. Add one sentence about why.
 
-  editorial  — written, nobody has edited it. This is the normal choice.
+  editorial  — nobody has edited it yet. This is the normal choice.
                Goes to Editorial review, then Technical review.
-  technical  — an editor has already been through it for structure and
-               register, and what it needs is the correctness check.
-               Goes straight to Technical review.
+  technical  — an editor already checked structure and style. It needs
+               only the correctness check. Goes to Technical review.
 
-Either way it passes through Technical review, because that is what this
-template is for. If it does not need technical review, you want the
-"Finished blog post - ready for copyedit" template instead.
+Both lanes include Technical review. If the post does not need technical
+review, use the "Finished blog post - ready for copyedit" template.
 
-When unsure, pick editorial. -->
+If you are not sure, choose editorial. -->
 
 ## Who has already reviewed it
 
-<!-- Names and what they looked at. "Nobody" is a fine answer and is the
-common one. If a reviewer's comments are in the doc, say so — that saves
-the next reviewer from re-raising the same points. -->
+<!-- Names, and what each person checked. "Nobody" is a normal answer. If
+reviewer comments are in the doc, say so, so the next reviewer does not
+repeat them. -->
 
 ## Where your claims come from
 
-<!-- Optional, and there is no right format. Anything you put here makes the
-technical review faster and more accurate; leaving it empty is allowed and
-the review still happens.
+<!-- Optional. Any format. This makes the technical review faster. The
+review still happens if you leave it empty.
 
-What it is for: a reviewer's job is to check the claims in the post. Anything
-that tells them where a claim came from saves them rediscovering it. That is
-the whole idea.
+Choose whatever is easiest:
 
-Use whatever matches how you already work — we do not know or care what you
-drafted in:
-
-  - **Already in the post?** Say "links are inline" and skip the rest.
-  - **A bullet list here.** Claim, then where it came from. The most common
-    shape:
+  - "Links are inline in the post."
+  - A list: the claim, then its source. Example:
       - the 3.2x figure -> benchmark in PR #1234, run on the H100 box
       - the eviction behavior -> docs/design/v1/storage_backend/README.md
-      - "most deployments hit this" -> support threads, roughly a dozen
-  - **A pointer.** "Everything comes from PR #1234 and issue #987" is a
-    complete answer when it is true.
-  - **In the doc itself.** Comments, footnotes, a sources section at the
-    bottom — just say where to look.
-  - **Attach something.** A benchmark log, a spreadsheet, a transcript.
-
-Most valuable thing you can do here, if you do nothing else: **flag what you
-are least sure of.** "I believe this is right but I did not verify it
-myself" points the reviewer straight at the part that needs them, and costs
-you one line. -->
+      - "most deployments hit this" -> support threads, about a dozen
+  - One pointer: "Everything comes from PR #1234 and issue #987."
+  - "See the comments, footnotes, or sources section in the doc."
+  - An attachment: a benchmark log, a spreadsheet, a transcript. -->
 
 ## What you are least sure about
 
-<!-- Optional, and the single most useful line on this form. What in the post
-would you most want a reviewer to check? A number, a claim about how
-something behaves, a recommendation, a version constraint.
+<!-- Optional, but very useful. What should the reviewer check first? A
+number, a claim about behavior, a recommendation, a version requirement.
 
-"Nothing, I am confident in all of it" is a fine answer — though if that is
-true, the "Finished blog post" template is probably the faster path. -->
+If you are sure of everything, the "Finished blog post" template is
+probably faster. -->
 
 ## Numbers and their conditions
 
-<!-- Every benchmark or measurement in the draft, and the conditions it
-holds under: hardware, model, batch size, workload shape. We will not
-publish a number without its conditions, so if the draft has a number whose
-conditions are not written down next to it, this is where you supply them.
+<!-- List every benchmark or measurement in the draft, with its test
+conditions: hardware, model, batch size, workload. We do not publish a
+number without its conditions. If the draft does not state the conditions
+next to a number, give them here.
 
-If the draft has no numbers in it, say "none" and move on. -->
+If the draft has no numbers, write "none". -->
 
 ## Images and assets
 
-<!-- Do you have diagrams, screenshots, or charts? Attach them or link them,
-and say whether they are final or want redrawing. If a diagram needs
-redrawing, describe what it should show in a sentence or two and we will draw
-it. -->
+<!-- Attach or link any diagrams, screenshots, or charts. Say whether each
+one is final or needs redrawing. For a redraw, describe in one or two
+sentences what it should show, and we will draw it. -->
 
 ## Who should care and what should they do [CORE]
 
-<!-- Who should read this, and what is the very next thing they should do
-after reading? Upgrade? Set a flag? Try a config? Read a doc? If the draft
-already ends with this, just say "in the draft". -->
+<!-- Who should read this? What should they do next: upgrade, set a flag,
+try a config, read a doc? If the draft already says this, write "in the
+draft". -->
 
 ## What is still open
 
-<!-- Known limits, edge cases that do not work yet, follow-up PRs, anything
-you would like a reviewer to push back on. -->
-
-## Placement
-
-<!-- Is this LMCache-canonical or Tensormesh? Set `placement` above.
-
-LMCache content is published as LMCache's. Tensormesh does not originate
-LMCache content — so if you are unsure, say so here rather than guessing,
-and it gets settled before anything is scheduled. -->
+<!-- Known limits, cases that do not work yet, follow-up PRs, and anything
+you want the reviewer to question. -->
 
 ## Notes for the editor
 
-<!-- Not published. Anything we should avoid saying, a customer we should
-not name, an embargo date, a competitor comparison you would rather we did
-not draw, how to spell your name and what title you want on the byline.
+<!-- Optional. This issue is public: do not write anything here that you
+would not publish. Use this section for practical notes, such as when the
+post should go out or a question for the editor.
 
-Also: how much editing are you comfortable with? Some people want a light
-copy-edit only. Say so and we will respect it. -->
+Also: how much editing do you accept? If you want only a light copyedit,
+say so. -->

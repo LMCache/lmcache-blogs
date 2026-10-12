@@ -7,29 +7,27 @@ argument-hint: "[--scope uncommitted|branch|staged] [--fix|--check-only]"
 
 # Pre-PR Check
 
-Check the current changes against the standards in `AGENTS.md` and fix what can be fixed
-mechanically, so the PR is clean before it is opened.
-
-Run this **before** `/create-pr`.
+Check the current changes against `AGENTS.md`, and fix what can be fixed
+mechanically. Run this skill before `/create-pr`.
 
 ## Arguments
 
 - `--scope` (default: `branch`)
-  - `uncommitted` — unstaged + staged changes vs `HEAD`
-  - `staged` — staged changes only
-  - `branch` — every commit on this branch not yet in `main` (the full PR diff). Default,
-    because it matches what a reviewer sees.
-- `--fix` (default) — fix what is mechanically fixable
-- `--check-only` — report only, modify nothing
+  - `uncommitted`: unstaged and staged changes against `HEAD`
+  - `staged`: staged changes only
+  - `branch`: every commit on this branch that is not in `main` (the full PR
+    diff, as a reviewer sees it)
+- `--fix` (default): fix what is mechanically fixable
+- `--check-only`: report only; change nothing
 
 ## Workflow
 
-### Step 0 — Load the standard
+### Step 0: Load the standard
 
-Read `AGENTS.md`. It is authoritative. Note especially § Commit Authorship, § Writing Prose,
-and § Pipeline-Specific Rules for Agents.
+Read `AGENTS.md`, which is authoritative, especially § Commit Authorship,
+§ Writing Prose, and § Pipeline-Specific Rules for Agents.
 
-### Step 1 — Detect scope
+### Step 1: Detect scope
 
 ```bash
 git status --short
@@ -44,96 +42,97 @@ git branch --show-current
 
 If the scope has no changes, say so and stop.
 
-### Step 2 — Read the changed files
+### Step 2: Read the changed files
 
-Read the current content of each changed file, not just the diff, so edits are accurate.
-For a large change, delegate a per-file summary to the Explore agent first.
+Read the full content of each changed file, not only the diff. For a large
+change, ask the Explore agent for a per-file summary first.
 
-### Step 3 — Run the checks
+### Step 3: Run the checks
 
 #### A. Mechanical (fix unless `--check-only`)
 
-1. **Prose over 80 columns** in any `.md` file under `docs/`, in `README.md`, or in a
-   template. Rewrap. Do not reflow paragraphs you did not otherwise touch — that turns a
-   two-line diff into a twenty-line one.
-2. **Skeleton drift.** If `.github/ISSUE_TEMPLATE/blog-post.md` changed, re-copy it:
+1. Prose over 80 columns in any `.md` file under `docs/`, in `README.md`, or
+   in a template. Rewrap only the lines you changed; reflowing untouched
+   paragraphs makes a small diff large.
+2. Skeleton drift. If `.github/ISSUE_TEMPLATE/blog-post.md` changed, copy it:
    `cp .github/ISSUE_TEMPLATE/blog-post.md docs/templates/blog-post-skeleton.md`.
-   The canonical direction is always `.github/` → `docs/`, never the reverse.
-3. **Banned words** in prose or in generator instructions: "leverage", "utilize",
-   "seamlessly", "revolutionary", "in today's fast-paced world", "delve", "robust
-   solution". Replace with the plain word.
-4. **Trailing whitespace, missing final newline, CRLF line endings.**
-5. **Missing SPDX header** — `# SPDX-License-Identifier: Apache-2.0` on line 1 of every
-   new `.py` file.
-6. **Python typing gaps** (`AGENTS.md` § Python): missing type hints, `Any`, bare generics
-   (`list` → `list[str]`), `Optional[X]` → `X | None`.
-7. **`assert` used for runtime validation** → `if not cond: raise ValueError(...)`.
-8. **Lazy imports** → move to the top of the file under the right section heading.
+   Always copy from `.github/` to `docs/`, never the reverse.
+3. Banned words in prose or in generator instructions: "leverage", "utilize",
+   "seamlessly", "revolutionary", "in today's fast-paced world", "delve", and
+   "robust solution". Replace each with the plain word.
+4. Trailing whitespace, a missing final newline, or CRLF line endings.
+5. A missing SPDX header. Every new `.py` file needs
+   `# SPDX-License-Identifier: Apache-2.0` on line 1.
+6. Python typing gaps (`AGENTS.md` § Python): missing type hints, `Any`, bare
+   generics (`list` → `list[str]`), and `Optional[X]` (→ `X | None`).
+7. `assert` used for runtime validation. Replace with
+   `if not cond: raise ValueError(...)`.
+8. Lazy imports. Move them to the top of the file, under the correct section
+   heading.
 
-#### B. Docstrings (fix when the content is clear; flag when it is not)
+#### B. Docstrings (fix when the purpose is clear; flag when it is not)
 
-9. **Missing docstring** on a public Python function. If the purpose is obvious from the
-   code, write a full one (summary, args, returns, raises). If it is not, write what you can
-   and leave a `TODO: confirm` plus a note in the report.
-10. **Stale docstring** — a parameter was added or its meaning changed and the docstring
+9. A public Python function with no docstring. If the purpose is clear, write
+   a full docstring (summary, args, returns, and raises). If not, write what
+   you can, add `TODO: confirm`, and note it in the report.
+10. A stale docstring: a parameter was added or changed, and the docstring
     still describes the old contract.
 
-#### C. Judgment calls (flag; do NOT silently change)
+#### C. Judgment calls (flag only; do not change)
 
-11. **A `##` heading in the skeleton was renamed, reordered, or removed.** This breaks the
-    parser. The parse-contract table in `docs/pipeline/skeleton-to-prompt.md` must change in
-    the same PR. Report as **error** if it did not.
-12. **The intake agreement is out of step.** The issue template,
-    `docs/blog-submission-process.md`, and `docs/pipeline/skeleton-to-prompt.md` are three
-    views of one agreement. If the diff touches one and the others now describe something
-    different, report it.
-13. **The skeleton got longer.** If a `[CORE]` section was added or an existing one grew,
-    ask what got cut. The five core fields have a ten-minute budget; that budget is the
-    whole reason contributors fill it in.
-14. **An invented number**, or a number without its conditions (hardware, model, batch size,
-    workload shape) in the same sentence or the adjacent one. Report as **error**.
-15. **A claim not traceable** to the skeleton, the diff, or a linked issue, missing from the
-    claims ledger. Report as **error**.
-16. **`Notes for the editor` content leaking** into anything that gets published.
-17. **A customer name, embargo date, credential, token, or internal-only URL** anywhere in
-    the diff. Report as **error**.
-18. **Brand-boundary violation** — Tensormesh originating LMCache-canonical content, or the
-    reverse.
-19. **Upstream board mutation** — a plan or script that relabels, assigns, transitions, or
-    closes an issue in `LMCache/LMCache`. Report as **error**.
-20. **New Python without tests**, or a bug fix without a regression test.
-21. **PR scope too large** — the diff spans unrelated concerns. Suggest a split.
+11. A `##` heading in the skeleton was renamed, reordered, or removed, which
+    breaks the parser. If the parse-contract table in
+    `docs/pipeline/skeleton-to-prompt.md` did not change in the same PR,
+    report an error.
+12. The issue template, `docs/blog-submission-process.md`, and
+    `docs/pipeline/skeleton-to-prompt.md` now disagree. They describe one
+    intake agreement.
+13. A `[CORE]` section was added or grew. Ask what was cut. The five core
+    fields must take about ten minutes, or contributors will not fill them
+    in.
+14. An invented number, or a number without its conditions (hardware, model,
+    batch size, and workload shape) in the same or the next sentence. Report
+    an error.
+15. A claim that does not trace to the skeleton, the diff, or a linked issue,
+    and is missing from the claims ledger. Report an error.
+16. Content from `Notes for the editor` in anything that is published.
+17. A customer name, embargo date, credential, token, or internal-only URL
+    anywhere in the diff. Report an error.
+18. Upstream board mutation: a plan or script that relabels, assigns,
+    transitions, or closes an issue in `LMCache/LMCache`. Report an error.
+19. New Python without tests, or a bug fix without a regression test.
+20. A PR that is too large because the diff covers unrelated concerns. Suggest
+    a split.
 
-### Step 4 — Apply fixes
+### Step 4: Apply fixes
 
-Use `Edit` for precise, minimal changes. Preserve existing voice and formatting. Re-read
-after editing to confirm the change applied.
+Use `Edit` for minimal changes. Keep the existing voice and formatting.
+Re-read each edited file to confirm the change.
 
-Category C is never auto-fixed. Report it.
+Never auto-fix category C. Report it.
 
-### Step 5 — Check the commits
+### Step 5: Check the commits
 
 ```bash
 git log --format='%H%n%an <%ae>%n%b%n---' main..HEAD
 ```
 
-For every commit on the branch, verify:
+For every commit on the branch, verify these points:
 
-- the required `Signed-off-by:` trailers are present (report as **error** if missing). A
-  commit by the repo owner needs **both** `quaid@iquaid.org` and `karsten@tensormesh.ai`;
-  anyone else signs off once, as themselves. The fix is a rebase, which the developer runs,
-  not you
-- the author line carries a plain name and no parenthetical handle — `Karsten Wade
-  <quaid@iquaid.org>`, not `Karsten Wade (quaid) <...>`, which is what a local `user.name`
-  often supplies
-- **no** `Co-Authored-By:` trailer naming a model, and no "generated with" banner (report as
-  **error**; this repo's authorship stays human — `AGENTS.md` § Commit Authorship). Check the
-  PR body too, not just the commits
-- the author is a human, not an agent identity
+- The required `Signed-off-by:` trailers are present. A commit by the repo
+  owner needs both `quaid@iquaid.org` and `karsten@tensormesh.ai`. Other
+  contributors sign off once, as themselves. If a trailer is missing, report an
+  error. The fix is a rebase; the developer runs it, not you.
+- The author line has no handle in parentheses:
+  `Karsten Wade <quaid@iquaid.org>`, not `Karsten Wade (quaid) <...>`.
+- No `Co-Authored-By:` trailer names a model, and there is no "generated
+  with" banner, in the commits or the PR body. Otherwise report an error
+  (`AGENTS.md` § Commit Authorship).
+- The author is a human, not an agent identity.
 
-### Step 6 — Final verification
+### Step 6: Final verification
 
-Print these for the developer to run. Do not run them yourself.
+Print this command for the developer to run. Do not run it yourself.
 
 ```bash
 pre-commit run --all-files     # or: uvx pre-commit run --all-files
@@ -147,11 +146,11 @@ pre-commit run --all-files     # or: uvx pre-commit run --all-files
 - Issues found: `<total>` (auto-fixed: `<N>`, manual: `<N>`)
 
 ### Auto-fixed
-Grouped by category with `file:line` references.
+Group by category, with `file:line` references.
 
 ### Manual review required
-Grouped by severity — **error** (must fix before the PR), **warning** (should fix), **info**
-(suggestion) — each with `file:line` and a one-line explanation.
+Group by severity: error (must fix before the PR), warning (should fix), and
+info (suggestion). Give each item a `file:line` and a one-line explanation.
 
 ### Commands to run next
 
@@ -162,9 +161,11 @@ Grouped by severity — **error** (must fix before the PR), **warning** (should 
 
 ## Rules
 
-- Only touch files in the selected scope. Do not "improve" unchanged files.
-- Never add error handling, validation, or abstraction the task does not require.
-- When a fix needs judgment, flag it rather than guessing.
-- Never run `git add`, `git commit`, or `git push`. Git is the developer's.
-- Never run `pre-commit` yourself; print the command.
-- If `AGENTS.md` is missing, stop and ask the developer to pull the latest `main`.
+- Change only files in the selected scope. Do not edit unchanged files.
+- Do not add error handling, validation, or abstraction the task does not
+  need.
+- When a fix needs judgment, flag it. Do not guess.
+- Never run `git add`, `git commit`, or `git push`. The developer owns git.
+- Never run `pre-commit` yourself. Print the command.
+- If `AGENTS.md` is missing, stop and ask the developer to pull the latest
+  `main`.

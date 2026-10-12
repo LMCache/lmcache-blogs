@@ -7,23 +7,24 @@ argument-hint: "[base_branch] [--draft] [--title 'PR title']"
 
 # Create Pull Request
 
-Open a pull request from the current branch. This skill only opens the PR — it never
-commits, and it never pushes.
+Open a pull request from the current branch. This skill only opens the PR. It
+never commits and never pushes.
 
 Run `/pre-pr-check` first.
 
 ## Arguments
 
 `$ARGUMENTS` may contain:
-- First positional arg: base branch (default: the repo's default branch, `main`)
-- `--draft`: open as a draft
-- `--title 'PR title'`: override the generated title
+- First positional arg: the base branch (default: the repo's default branch,
+  `main`)
+- `--draft`: open the PR as a draft
+- `--title 'PR title'`: use this title instead of a generated one
 
 ## Steps
 
 ### 1. Gather context
 
-Run in parallel:
+Run these in parallel:
 
 ```bash
 git remote -v
@@ -32,33 +33,34 @@ git status -s
 gh api repos/<OWNER>/<REPO> --jq '.default_branch'
 ```
 
-Determine the remote, the owner/repo, and the base branch (from `$ARGUMENTS`, else the
-repo's default branch).
+Find the remote, the owner/repo, and the base branch (from `$ARGUMENTS`, else
+the default branch).
 
-### 2. Check the branch is pushed
+### 2. Check that the branch is pushed
 
-Verify the branch exists on the remote. If it does not, **stop and tell the developer to
-push it** — do not push on their behalf.
+Verify that the branch exists on the remote. If it does not, **stop and tell
+the developer to push it.** Do not push it yourself.
 
-If the working tree is dirty, warn that the uncommitted changes will not be in the PR.
+If the working tree has uncommitted changes, warn that they will not be in the
+PR.
 
-### 3. Verify the commits before drafting anything
+### 3. Verify the commits
 
 ```bash
 git log --format='%H%n%an <%ae>%n%b%n---' <base>..HEAD
 ```
 
-Stop and report, rather than opening the PR, if any commit:
+Do not open the PR. Stop and report if any commit:
 
-- lacks its required `Signed-off-by:` trailers — a commit by the repo owner needs **both**
-  `quaid@iquaid.org` and `karsten@tensormesh.ai`; anyone else signs off once, as themselves
-- carries a `Co-Authored-By:` trailer naming a model, or a "generated with" banner — this
-  repo's commits are authored by humans only (`AGENTS.md` § Commit Authorship)
+- is missing a required `Signed-off-by:` trailer. A commit by the repo owner
+  needs both `quaid@iquaid.org` and `karsten@tensormesh.ai`. Other contributors
+  sign off once, as themselves.
+- has a `Co-Authored-By:` trailer that names a model, or a "generated with"
+  banner. Only humans author commits in this repo (`AGENTS.md` § Commit
+  Authorship).
 
-The same rule binds the PR body you are about to write: no model attribution, no
-"generated with" footer. Do not add one.
-
-These are cheap to fix before the PR exists and annoying to fix after.
+The same rule applies to the PR body: do not add model attribution or a
+"generated with" footer.
 
 ### 4. Read the PR template
 
@@ -77,31 +79,35 @@ git diff <base>..HEAD          # if the change is small enough to read whole
 
 ### 6. Draft the PR
 
-- **Title** — `--title` if given, else generate one under 70 characters. It must start with
-  a type tag: a bracketed type (`[Doc]`, `[Bugfix]`, `[Core]`, `[CI]`, `[Build]`, `[Test]`,
-  `[Misc]`) or a conventional-commit type (`docs:`, `fix:`, `feat:`, `ci:`, `chore:`).
-  Name the component when it helps — `[Intake][Doc] ...` or `docs(intake): ...`.
-- **Body** — fill in the template's sections. Lead with **why** the change is needed and
-  what a reviewer should look at first. Tick the checkboxes that apply, including the
-  skeleton-sync and parse-contract ones when the change touches the skeleton. Do not
-  enumerate per-file changes; the reviewer can read the diff.
-- **Link the issue** — `Fixes #N` to close on merge, `Refs #N` for context only.
+- Title: use `--title` if given. Otherwise write one under 70 characters. Start
+  it with a type tag: a bracketed type (`[Doc]`, `[Bugfix]`, `[Core]`, `[CI]`,
+  `[Build]`, `[Test]`, `[Misc]`) or a conventional-commit type (`docs:`,
+  `fix:`, `feat:`, `ci:`, `chore:`). Add the component when it helps:
+  `[Intake][Doc] ...` or `docs(intake): ...`.
+- Body: fill in the template's sections. Start with why the change is needed
+  and what the reviewer should look at first. Tick the checkboxes that apply,
+  including skeleton-sync and parse-contract when the change touches the
+  skeleton. Do not list changes file by file; the reviewer can read the diff.
+- Issue link: `Fixes #N` closes the issue on merge. `Refs #N` links it for
+  context only.
 
-Show the drafted title and body and **ask for confirmation before creating the PR.**
+Show the title and body, and **ask for confirmation before you create the
+PR.**
 
 ### 7. Create it
 
-Use `mcp__github__create_pull_request` with the owner, repo, `head` (the branch), `base`,
-title, body, and `draft` if requested.
+Call `mcp__github__create_pull_request` with the owner, repo, `head` (the
+branch), `base`, title, body, and `draft` if requested.
 
 ### 8. Report
 
-Print the PR URL, and remind the developer that opening a PR notifies nobody in particular:
-post the link in `#lmcache-content` with a one-line summary so a human knows it is waiting.
+Print the PR URL. Remind the developer that a new PR does not notify a
+specific person. Post the link in `#lmcache-content` with a one-line summary so
+that a human knows it is waiting.
 
 ## Important Notes
 
-- Never push, never commit. This skill opens PRs from branches that are already pushed.
+- Never push or commit.
 - Always show the title and body for confirmation first.
-- One logical change per PR. If the diff spans unrelated concerns, say so and suggest a
-  split rather than opening one big PR.
+- Keep one logical change per PR. If the diff covers unrelated concerns, say
+  so and suggest a split.

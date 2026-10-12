@@ -1,156 +1,127 @@
 # How to get a blog post written
 
-Five ways in. Pick whichever is least annoying for you.
+There are five ways to submit a post. Pick the one that is easiest for you.
 
-**If the post is not written yet**, paths A, B, and C all end in the same
-place: a card on the board with a skeleton attached. **You do not write the
-post** — you write a skeleton, rough notes in your own language, and the
-pipeline plus an editor turn it into a post. You review it before it goes
-out.
+If the post is not written yet, use path A, B, or C. You write a skeleton
+(rough notes), and the pipeline and an editor turn it into a post. You review
+the post before it publishes. Each path creates a card on the
+[editorial board](https://github.com/orgs/LMCache/projects/6).
 
-**If the post is already written**, there are two paths and the difference
-is only this: *does the technical content still need checking?*
+If the post is already written, use path D or E:
 
-- **No — it is already sound**, because you built the thing, or because
-  someone at your org or a third party already reviewed it. That is the
-  common case. → [Path E](#path-e--a-finished-post-ready-for-copyedit)
-- **Yes — it wants a technical review**, because you wrote up work that is
-  not yours, or you would rather a second pair of eyes confirmed the details.
-  → [Path D](#path-d--a-draft-that-needs-technical-review)
+- [Path E](#path-e--a-finished-post-ready-for-copyedit): the technical content
+  is already correct. You built the feature, or someone reviewed it. This is
+  the common case.
+- [Path D](#path-d--a-draft-that-needs-technical-review): the technical
+  content needs a review. For example, you wrote about someone else's work.
 
-Picking wrong is not a disaster — a card moves lanes and nobody minds — but
-picking right saves a round trip.
+If you pick the wrong path, an editor moves the card.
 
-**Write in your own language.** Do not translate for us. Translating on the
-way in loses the details that make a post good, and we localize on the way
-out anyway.
+**Write in your own language.** Do not translate for us. Translation loses the
+details that make a post good, and we localize every post before publishing.
 
 ---
 
 ## Path A — Issue template (default, start here)
 
-Best for: most people, most of the time. Fastest path if you are already in
-GitHub.
+Use this path if you work in GitHub. It is the fastest path.
 
-1. Go to the content board and [open a new
-   issue](../../../issues/new/choose). Choose
+1. [Open a new issue](../../../issues/new/choose) in this repo. Choose
    **Blog post from a PR**.
-2. Fill in the YAML block at the top — the PR link and your name are the
-   only ones that matter.
-3. Fill in the five `[CORE]` sections. Ten minutes is a normal amount of
-   time to spend. Leave the rest blank if you are busy.
-4. Submit. Your card lands in **Drafting** automatically.
-5. Within a day you get a Slack DM with a generated draft attached to the
-   issue.
-6. Read it. If there are `QUESTION FOR AUTHOR` blocks, answer them in a
-   comment — the card comes back to you until they are cleared.
-7. Comment "looks right" or push corrections. Card moves to **Editorial
+2. Fill in the YAML block at the top. Only the PR link and your name are
+   required.
+3. Fill in the `[CORE]` sections. Ten minutes is normal. Leave the other
+   sections blank if you are busy.
+4. Submit. The card goes to **Drafting** automatically.
+5. Within one day, a generated draft is attached to the issue, and you get a
+   Slack DM.
+6. Answer each `QUESTION FOR AUTHOR` block in a comment. The card waits for
+   you until you answer all of them.
+7. Comment "looks right", or push corrections. The card moves to **Editorial
    review**.
-8. You get one more look at technical review before it publishes.
+8. You review the post again at **Technical review**.
 
 ---
 
 ## Path B — Google Doc
 
-Best for: you would rather write in a doc, you want a colleague to help you
-fill it in, or you are drafting on a phone.
+Use this path if you prefer to write in a doc, want a colleague to help, or
+are working on a phone.
 
-1. Open the **Blog Post Skeleton** template in Drive and make a copy.
-   (File → Make a copy. Do not edit the template itself.)
-2. Fill it in the same way as Path A. Keep the headings — do not delete or
-   rename them.
-3. Share the copy so anyone at Tensormesh with the link can comment.
-4. Open a blank issue on the content board, title it `[blog] <your one-liner>`,
-   and paste the doc link as the whole body.
-5. The pipeline reads the doc, pulls the fields, and rewrites the issue body
-   with the parsed skeleton and the right labels.
-6. From here it is identical to Path A, step 5 onward. Edits continue in the
-   doc — the issue is the tracking record, the doc is the working surface.
+1. Open the **Blog Post Skeleton** template in Drive and make a copy
+   (File → Make a copy). Do not edit the template.
+2. Fill it in as in Path A. Do not delete or rename the headings.
+3. Share the copy so that anyone at Tensormesh with the link can comment.
+4. Open a blank issue in this repo. Title it `[blog] <your one-liner>`. Paste
+   the doc link as the whole body.
+5. The pipeline reads the doc, rewrites the issue body, and adds the labels.
+6. Continue from Path A, step 5. Make later edits in the doc, not the issue.
 
 ---
 
 ## Path C — Attach a markdown file
 
-Best for: you already wrote notes somewhere, you live in your editor, or you
-want this in the same PR as your code.
+Use this path if you already have notes, work in an editor, or want the
+skeleton in the same PR as your code.
 
-1. Grab the skeleton from this repo — [`docs/templates/blog-post-skeleton.md`](templates/blog-post-skeleton.md),
-   or download it straight from
-   [raw](../../../raw/main/docs/templates/blog-post-skeleton.md)
-   — or write plain markdown using the same `##` headings.
+1. Get the skeleton:
+   [`docs/templates/blog-post-skeleton.md`](templates/blog-post-skeleton.md)
+   ([raw download](../../../raw/main/docs/templates/blog-post-skeleton.md)).
+   You can also write plain markdown with the same `##` headings.
 2. Fill it in.
-3. Either:
-   - drag the `.md` file onto a new blank issue on the content board, or
-   - commit it to `content/skeletons/<pr-number>.md` in a PR and open an
-     issue linking to it.
-4. Title the issue anything. You do not need to fill in the body.
-5. The pipeline reads the attachment, derives the metadata from the front
-   matter, and **rewrites the issue title, body, and labels to match**. You
-   do not have to keep them in sync by hand.
-6. From here it is identical to Path A, step 5 onward.
-
----
+3. Do one of these:
+   - Drag the `.md` file onto a new blank issue in this repo.
+   - Commit it to `content/skeletons/<pr-number>.md` in a PR, and open an issue
+     that links to it.
+4. Use any issue title, and leave the body empty. The pipeline rewrites the
+   title, body, and labels from the file.
+5. Continue from Path A, step 5.
 
 ---
 
 ## Path D — a draft that needs technical review
 
-Best for: the writing is done, the verification is not. You wrote up work
-that is not yours, or you are describing a system you do not own, or you
-would rather someone confirmed the details before your name is on it.
-
-**"Draft" here means the technical content still wants checking.** If it does
-not, you want [Path E](#path-e--a-finished-post-ready-for-copyedit) — most
-already-written posts do.
+Use this path if the writing is done but nobody has checked the technical
+content. If someone has, use Path E.
 
 1. Open a new issue and choose **Blog post draft — needs technical review**.
-2. Link the draft, drag the file onto the issue, or open a PR that adds it under
-   [`content/drafts/`](../content/README.md#drafts) and link the PR.
-3. Pick the lane — `editorial` if nobody has edited it (the normal choice),
-   `technical` if an editor already has. Either way it passes through
-   Technical review; that is the point of this path.
-4. Optionally, say where your claims came from, and — more useful — **what
-   you are least sure about**. Neither is required. Anything you put there
-   points the reviewer at the part that needs them instead of the whole
-   piece. Any format works; the template lists several and does not care
-   what you drafted in.
-5. Submit. Your card skips **Idea**, **Claimed**, and **Drafting** and lands
-   in the lane you picked.
+2. Link the draft, drag the file onto the issue, or open a PR that adds it
+   under [`content/drafts/`](../content/README.md#drafts) and link the PR.
+3. Set the lane. Use `editorial` if nobody has edited the post (the normal
+   choice). Use `technical` if an editor already has. Both lanes include
+   Technical review.
+4. Optional: say where your claims come from, and what you are least sure
+   about. This tells the reviewer where to look first.
+5. Submit. The card skips **Idea**, **Claimed**, and **Drafting**, and goes to
+   the lane you set.
 
 ---
 
 ## Path E — a finished post, ready for copyedit
 
-Best for: the post is done *and* the technical content is already sound. This
-is the normal path for a post written by the person who built the thing, and
-for a post from another organization that already reviewed it.
+Use this path if the post is done and the technical content is already
+correct.
 
 1. Open a new issue and choose **Finished blog post — ready for copyedit**.
-2. Link the post, drag the file onto the issue, or open a PR that adds it under
-   [`content/drafts/`](../content/README.md#drafts) and link the PR.
-3. Say **who verified the technical content** — you, because you built it;
-   someone at your org; or an external review. Usually one line. We take your
-   word for it; this is just the record of whose word it was.
-4. Say how much editing you are comfortable with: `full` (structure and
-   phrasing are ours to adjust, within house style) or `light` (copyedit
-   only — grammar, typos, consistency). Either is fine and nobody will argue.
-5. Submit. Your card enters **Editorial review** for the copyedit, then goes
-   to **Translations**. **It does not pass through Technical review.**
+2. Link the post, drag the file onto the issue, or open a PR that adds it
+   under [`content/drafts/`](../content/README.md#drafts) and link the PR.
+3. Say who verified the technical content: you (you built it), someone at your
+   organization, or an external reviewer. One line is enough.
+4. Choose the editing level: `full` (we can change structure and phrasing,
+   within house style) or `light` (grammar, typos, and consistency only).
+5. Submit. The card goes to **Editorial review** for the copyedit, then to
+   **Translations**. **It does not go through Technical review.**
 
-Two checks still apply, because they apply to everything we publish
-regardless of who verified it: every number carries the conditions it holds
-under, and placement respects the LMCache/Tensormesh boundary. Both are
-one-liners on the form.
+Every number in the post must still state its test conditions. The copyedit
+checks this.
 
-If you get to "who verified the technical content" and are not sure what to
-put, that is worth noticing — the post probably wants Path D. No harm in it,
-and it is faster than a correction after publishing.
+If you do not know who verified the technical content, use Path D.
 
-## If it is not about a PR
+## If the post is not about a PR
 
-The skeleton still works — leave `pr:` blank and set `post_type` to `why-to`.
-`What was wrong before` and `The interesting part` are still the two fields
-that carry the piece.
+Use the skeleton anyway. Leave `pr:` blank and set `post_type` to `why-to`.
+`What was wrong before` and `The interesting part` are the two most important
+fields.
 
 ## What happens to your card
 
@@ -161,23 +132,16 @@ Idea → Claimed → Drafting → Editorial review → Technical review → Tran
                               (editorial)          (technical)
 ```
 
-Seven columns.
+Path D always goes through **Technical review**. Path E skips it. No path
+enters at **Idea** or **Claimed**: those columns hold proposed posts and posts
+that someone has taken, before anyone writes.
 
-- **Paths A, B, C** enter at **Drafting** — the skeleton needs turning into a
-  post first.
-- **Path D** enters at **Editorial review** or **Technical review**, and
-  always passes through Technical review.
-- **Path E** enters at **Editorial review** for the copyedit and then goes
-  **straight to Translations, skipping Technical review.** That skip is the
-  whole difference between D and E.
-- **Idea** and **Claimed** take no intake path. They are where a post gets
-  proposed and picked up before anyone has written anything.
-
-You get a Slack DM when your card moves and when something needs you. If a
-card sits waiting on you for more than two days, you get a nudge.
+You get a Slack DM when your card moves or needs you. If a card waits on you
+for more than two days, you get a reminder.
 
 ## Who to ask
 
-Karsten, in `#lmcache-content`. If the pipeline produces something wrong,
-say so in the issue rather than fixing it silently — the corrections are how
-it gets better.
+Ask Karsten Wade in `#lmcache-content`, or see
+[MAINTAINERS.md](../MAINTAINERS.md). If the pipeline produces something wrong,
+say so in the issue. Do not fix it silently: your corrections improve the
+pipeline.

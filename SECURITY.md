@@ -2,23 +2,21 @@
 
 ## Reporting a Vulnerability
 
-If you believe you have found a security vulnerability in this repository or in the content
-pipeline it describes, please report it privately rather than opening a public issue.
+Report security vulnerabilities in this repository or its content pipeline
+privately. Do not open a public issue.
 
-Email details to **karsten@tensormesh.ai**. Include enough to reproduce the problem —
-steps, screenshots, or a minimal example. We will investigate every report and do our best
-to fix the problem quickly.
+Email **karsten@tensormesh.ai**. Include the steps, screenshots, or a minimal
+example needed to reproduce the problem. We investigate every report.
 
-Vulnerabilities in **LMCache itself** belong upstream: see
+Report vulnerabilities in LMCache itself upstream, as described in
 [LMCache's security policy](https://github.com/LMCache/LMCache/blob/dev/SECURITY.md).
 
 ## Credentials and unpublished content
 
-Two classes of mistake are worth reporting here even though they are not vulnerabilities in
-code:
+Also report these two mistakes privately, although they are not code
+vulnerabilities:
 
-- **A credential, token, or API key committed to this repo.** Report it privately and it
-  gets rotated, not just deleted from the history.
-- **Embargoed or unpublished content, or a customer name, that reached a public surface.**
-  The skeleton's `Notes for the editor` section exists to keep this material out of drafts;
-  if something got through, say so privately so it can be pulled before it spreads.
+- A credential, token, or API key committed to this repo. We rotate it; deleting
+  it from the history is not enough.
+- Confidential or unpublished material that reached a public page. Report it
+  so we can remove it quickly.

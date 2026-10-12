@@ -11,18 +11,19 @@ labels: ["pipeline"]
 
 **Why — what is it costing us now?**
 
-<!-- The problem this solves. Toil, an error people keep making, a stage that stalls,
-edit-minutes per piece. Numbers if you have them. -->
+<!-- The problem this solves: repeated manual work, a common mistake, a
+stage where cards stop moving, editing time per post. Give numbers if you
+have them. -->
 
 **What you have in mind**
 
-<!-- The approach, roughly. Alternatives you considered and rejected are useful here. -->
+<!-- The approach, in outline. List alternatives you rejected, and why. -->
 
 **Does this touch the intake agreement?**
 
 <!-- The issue template, docs/blog-submission-process.md, and
-docs/pipeline/skeleton-to-prompt.md are three views of one agreement. Tick every one this
-change would touch, so a reviewer knows the blast radius. -->
+docs/pipeline/skeleton-to-prompt.md describe one agreement. Tick each one
+this change touches, so that a reviewer knows its scope. -->
 
 - [ ] the skeleton's `##` headings (a breaking change for the parser)
 - [ ] the contributor-facing process doc
@@ -31,4 +32,4 @@ change would touch, so a reviewer knows the blast radius. -->
 
 **Which rollout phase does this belong to?**
 
-<!-- Or say "unsure" — sequencing is a fair thing to argue about in the issue. -->
+<!-- Or write "unsure". We can decide the order in the issue. -->

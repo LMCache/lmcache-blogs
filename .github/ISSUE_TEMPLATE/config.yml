@@ -2,10 +2,10 @@ blank_issues_enabled: true
 contact_links:
   - name: How to get a blog post written
     url: https://github.com/LMCache/lmcache-blogs/blob/main/docs/blog-submission-process.md
-    about: The three intake paths, and what happens to your card after you submit.
+    about: The five intake paths (A to E), and what happens to your card after you submit.
   - name: Bug or feature request in LMCache itself
     url: https://github.com/LMCache/LMCache/issues/new/choose
-    about: This repo is the blog pipeline. Issues with the KV cache engine belong upstream.
+    about: This repo is the blog pipeline. Report KV cache engine issues in the LMCache repo.
   - name: Ask in Slack
     url: https://join.slack.com/t/lmcacheworkspace/shared_invite/zt-3zxjao8h0-lRfBfnLqbALOtLsWn2ITxA
-    about: Questions about the pipeline go to #lmcache-content.
+    about: Ask questions about the pipeline in #lmcache-content.

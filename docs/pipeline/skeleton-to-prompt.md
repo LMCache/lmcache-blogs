@@ -1,52 +1,47 @@
 # Skeleton → prompt
 
-How a filled skeleton becomes the prompt that generates a "story of a PR"
-post. This is the pipeline-facing half of the template pair.
+This document is the contract for turning a filled skeleton into the prompt
+that generates a "story of a PR" post. It is the pipeline-facing half of the
+template pair.
 
-The skeleton it parses lives at
+The skeleton lives at
 [`.github/ISSUE_TEMPLATE/blog-post.md`](../../.github/ISSUE_TEMPLATE/blog-post.md)
 (canonical) and [`../templates/blog-post-skeleton.md`](../templates/blog-post-skeleton.md)
-(the downloadable copy). Its `##` headings are this document's schema: change
-one there and the parse contract below changes in the same PR, or the parser
-silently drops a field.
+(the downloadable copy). Its `##` headings are this document's schema. If you
+change a heading there, change the parse contract below in the same PR.
+Otherwise the parser drops the field without an error.
 
 ## Why the skeleton is markdown and not a YAML issue form
 
-GitHub's YAML issue forms give you cleaner parsing. We are not using them,
-on purpose.
+There are three intake surfaces: issue body, attached `.md` file, and exported
+Google Doc. A YAML issue form works on only one of them. A markdown skeleton
+with stable `##` headings works on all three, so the pipeline needs one parser
+and one prompt assembler.
 
-There are three intake surfaces — issue body, attached `.md` file, exported
-Google Doc — and a YAML form only works on one of them. A markdown skeleton
-with stable `##` headings is the same artifact on all three, which means one
-parser, one prompt assembler, one thing to maintain. The headings are the
-schema.
+Nothing enforces that a heading is filled in, so the parser must handle empty
+sections (see "Empty required field" below).
 
-Cost of this choice: nothing enforces that a heading is filled in, so the
-parser has to handle empty sections gracefully (see "Empty required field"
-below). That is a cheap problem. Three divergent formats is an expensive one.
-
-If we later want form validation, the upgrade path is to add a YAML form
-that *emits* this exact markdown as the issue body. The downstream pipeline
-does not change.
+To add form validation later, add a YAML form that emits this exact markdown
+as the issue body. The downstream pipeline does not change.
 
 ## Parse contract
 
-Split the document on `^## ` headings. Strip HTML comments — they are
-instructions to the human, never input to the model. Front matter is the
-fenced `yaml` block at the top.
+1. Split the document on `^## ` headings.
+2. Strip HTML comments. They are instructions to the human and are never input
+   to the model.
+3. Read the fenced `yaml` block at the top as front matter.
+4. If the skeleton arrives as an attached `.md` file (path C), discard the
+   `---`-delimited block above the fenced block. It is GitHub issue-template
+   metadata (`name`, `about`, `title`, `labels`), not skeleton content. It is
+   absent from an issue body because GitHub consumes it when it creates the
+   issue.
+5. Strip the ` [CORE]` suffix before you match a heading against the table
+   below.
 
-A skeleton that arrives as an attached `.md` file (path C) also carries a
-`---`-delimited block above that fenced block: GitHub issue-template metadata
-(`name`, `about`, `title`, `labels`). It is not skeleton content. Discard it.
-It is absent when the skeleton arrives as an issue body, because GitHub
-consumes it when creating the issue.
-
-**Strip the ` [CORE]` suffix before matching a heading against the table below.**
-Five headings carry it — it tells a contributor in a hurry which fields to fill
-in first, and it is part of the literal heading text a splitter returns. So the
-raw heading is `What was wrong before [CORE]` and the field name is
-`What was wrong before`. Match on the stripped name; a parser that matches the
-raw text will silently drop exactly the five fields that carry the post.
+Six headings carry ` [CORE]`, and the suffix is part of the literal heading
+text. The raw heading is `What was wrong before [CORE]`; the field name is
+`What was wrong before`. A parser that matches the raw text drops exactly the
+six fields that carry the post.
 
 | Skeleton field | Machine key | Required |
 |---|---|---|
@@ -66,39 +61,38 @@ raw text will silently drop exactly the five fields that carry the post.
 
 ## Hydration
 
-Before the prompt is assembled, the bundle is enriched from the PR named in
-front matter:
+Before prompt assembly, enrich the bundle from the PR named in front matter:
 
-- PR title, description, merge date, author, reviewers
+- PR title, description, merge date, author, and reviewers
 - Full diff, plus a file-level summary (paths, lines changed)
 - Linked issues and their bodies
-- Review conversation, if any (this is often where `story` material hides
-  when the author left that field thin)
+- Review conversation, if any. It often holds `story` material when the
+  author left that field thin.
 
 ## Field → function in the post
 
-The generator is told what each field is *for*, not just that it exists.
-This is what stops the output reading like a changelog.
+Tell the generator what each field is for, so the output does not read like a
+changelog.
 
-- `oneliner` → title candidates, meta description, and the lede
-- `problem` → the opening. The hook is the symptom, not the solution
-- `stakes` → the paragraph that earns the reader's next two minutes; also
-  drives SEO framing and keyword selection
-- `approach` → the first body section, including the road not taken
-- `story` → **the narrative spine.** At least one section is built around
-  this, and the author's specific phrasing is preserved where it is
-  colorful. This is the difference between a post and a release note
+- `oneliner` → title candidates, meta description, and the lede.
+- `problem` → the opening. The hook is the symptom, not the solution.
+- `stakes` → the paragraph that tells the reader why to keep reading. Also
+  drives SEO framing and keyword selection.
+- `approach` → the first body section, including the alternative the author
+  rejected.
+- `story` → the narrative spine. Build at least one section around it.
+  Preserve the author's specific phrasing where it is vivid.
 - `code` → rendered verbatim with the file path, plus explanation. Never
-  reformatted, never "improved"
-- `numbers` → results section. Every figure carries its conditions in the
-  same sentence or the adjacent one
-- `cta` → a "who this is for" line near the top, and the closing action
-- `open` → an honest limitations section, kept as a section rather than
-  softened into an aside
-- `imagery` → image prompts, routed to the whitePrint style; not rendered
-  as prose
-- `refs` → inline links and credits
-- `editor_notes` → constraints on the generator. Never appears in output
+  reformat or "improve" it.
+- `numbers` → the results section. Every figure carries its conditions in the
+  same sentence or the adjacent one.
+- `cta` → a "who this is for" line near the top, and the closing action.
+- `open` → a limitations section. Keep it a section; do not reduce it to an
+  aside.
+- `imagery` → image prompts, routed to the whitePrint style. Not rendered as
+  prose.
+- `refs` → inline links and credits.
+- `editor_notes` → constraints on the generator. Never appears in output.
 
 ## Output contract
 
@@ -108,49 +102,46 @@ The generator returns:
 2. Slug and meta description
 3. Target keywords, with the primary one named
 4. The post, in markdown, with the PR linked in the first two paragraphs
-5. Image prompt list — one per idea in `imagery`, plus at most one the
-   generator proposes itself, clearly marked as proposed
+5. Image prompt list: one per idea in `imagery`, plus at most one that the
+   generator proposes, marked as proposed
 6. **Claims ledger** (see below)
 7. `QUESTION FOR AUTHOR` blocks, if any
 
 ## The claims ledger
 
-The reliability mechanism. Every factual assertion in the draft that did not
-come from the skeleton, the diff, or a linked issue gets listed at the end
-with a pointer to where it appears in the post.
+List every factual assertion in the draft that did not come from the
+skeleton, the diff, or a linked issue. Put the list at the end, with a pointer
+to where each assertion appears in the post.
 
-Technical review then becomes a bounded task — check the ledger — instead of
-re-reading the whole piece hunting for invention. This is the single thing
-that most reduces edit time per piece, which is the number we are reporting
-upward.
+Technical review then checks the ledger instead of re-reading the whole piece
+for invented claims. This is the main lever on edit time per piece, which is
+the metric the pipeline reports.
 
 ## Rules the generator is given
 
-- Do not invent numbers. Not one. If `numbers` is empty, the post has no
-  benchmarks in it
-- Do not state a number without its conditions
-- Do not claim a capability the diff does not show
-- Preserve the author's voice in `story`. If they wrote something vivid,
-  keep their words rather than smoothing them into house style
-- House style applies to structure, register, and clarity — not to the
-  author's specific descriptions
-- Write for someone who has the problem, not for someone admiring the fix
-- Second person. Present tense. No "revolutionary", no "seamlessly", no
-  "in today's fast-paced world"
-- The post must be useful even to a reader who never adopts the change
+- Do not invent numbers. If `numbers` is empty, the post has no benchmarks.
+- Do not state a number without its conditions.
+- Do not claim a capability that the diff does not show.
+- Preserve the author's voice in `story`. Keep their vivid wording instead of
+  rewriting it into house style.
+- Apply house style to structure, register, and clarity. Do not apply it to
+  the author's specific descriptions.
+- Write for a reader who has the problem.
+- Use second person and present tense. Do not use "revolutionary",
+  "seamlessly", or "in today's fast-paced world".
+- Make the post useful to a reader who never adopts the change.
 
 ## Empty required field
 
-Do not fabricate and do not silently proceed. Emit:
+Do not fabricate. Do not continue silently. Emit:
 
 ```
 QUESTION FOR AUTHOR — [field]
 [the specific question, referencing what the diff appears to show]
 ```
 
-The pipeline posts these as a comment on the issue and moves the card back
-to the author's column. A draft with open questions never advances to
-editorial.
+The pipeline posts these as a comment on the issue and moves the card back to
+the author's column. A draft with open questions never advances to editorial.
 
 ## Prompt skeleton (assembled)
 
@@ -191,22 +182,21 @@ RETURN
 
 ## Template two: a draft that needs technical review
 
-Path D (`.github/ISSUE_TEMPLATE/blog-post-draft.md`) is a different contract.
-Nothing on this path goes through hydration or prompt assembly — the post
-already exists — so the generator is not involved at all. What the pipeline
-does is route the card and hand a reviewer enough context to review.
+Path D (`.github/ISSUE_TEMPLATE/blog-post-draft.md`) has a separate contract.
+The post already exists, so this path has no hydration, no prompt assembly,
+and no generator. The pipeline routes the card and gives a reviewer enough
+context to review.
 
-This path is for a draft whose **technical content still needs checking**. A
-finished post that is already technically sound takes template three below,
-and skips Technical review entirely. That distinction is the only thing
-separating the two, and it is the author's call to make.
+Use this path when the draft's technical content still needs checking. A
+finished post that is already technically sound uses template three below and
+skips Technical review. The author decides which applies.
 
-Same mechanics as above: split on `^## `, strip HTML comments, strip the
-` [CORE]` suffix, read the fenced `yaml` block as front matter.
+Parse it the same way: split on `^## `, strip HTML comments, strip the
+` [CORE]` suffix, and read the fenced `yaml` block as front matter.
 
 | Draft field | Machine key | Required |
 |---|---|---|
-| front matter | `meta.*` | `draft`, `entry_lane`, `author`, `language`, `placement` |
+| front matter | `meta.*` | `draft`, `entry_lane`, `author`, `language` |
 | Where the draft is | `draft_location` | **yes** |
 | What it says in one sentence | `oneliner` | **yes** |
 | Which lane it should enter | `entry_lane_why` | **yes** |
@@ -217,82 +207,70 @@ Same mechanics as above: split on `^## `, strip HTML comments, strip the
 | Images and assets | `assets` | no |
 | Who should care and what should they do | `cta` | **yes** |
 | What is still open | `open` | no |
-| Placement | `placement_why` | no |
 | Notes for the editor | `editor_notes` | no — **never rendered** |
 
-Four keys — `oneliner`, `numbers`, `cta`, `open`, `editor_notes` — are shared
-with the skeleton contract and mean the same thing, so a parser can use one
-field map for both templates.
+Five keys (`oneliner`, `numbers`, `cta`, `open`, and `editor_notes`) are
+shared with the skeleton contract and mean the same thing. A parser can use
+one field map for both templates.
 
 ### Routing
 
-`meta.entry_lane` sets the column, and it is the only thing on this path that
-moves a card:
+`meta.entry_lane` sets the column. It is the only thing on this path that
+moves a card.
 
 | `entry_lane` | Column |
 |---|---|
 | `editorial` | Editorial review |
 | `technical` | Technical review |
 
-Anything else is a validation error, not a default. Route the card to
-Editorial review and say why in a comment, rather than guessing at what the
-author meant.
+Treat any other value as a validation error. Do not guess what the author
+meant. Route the card to Editorial review and post a comment that says why.
 
-### `sources` and `uncertain` are hints, not gates
+### `sources` and `uncertain` are optional
 
-A generated draft carries a claims ledger: every assertion not traceable to
-the skeleton, the diff, or a linked issue, listed with a pointer to where it
-appears. That is what makes technical review a bounded task on path A.
+A generated draft has a claims ledger. A human-written draft has none, and
+one cannot be built afterward, because nothing records which sentences were
+sourced. `sources` and `uncertain` let the author supply some of that by hand.
 
-A human-written draft has no ledger and cannot be given one after the fact —
-nothing knows which sentences were sourced and which were remembered. So
-`sources` and `uncertain` are the author supplying by hand some of what the
-generator would have emitted.
+Both are optional, and an empty field is not an error. The post gets a full
+technical review either way. Sourcing makes the review faster; it is not a
+precondition for it.
 
-**Both are optional, and empty is not an error.** The post is going through a
-full technical review either way; that is what this path is *for*. Sourcing
-makes that review faster and more accurate, it does not authorize it.
+When they are empty:
 
-So when they are empty:
+- Do **not** emit `QUESTION FOR AUTHOR`, and do **not** hold the card. Route
+  it to its lane.
+- Add a note for the reviewer: *"no sourcing supplied — claims need verifying
+  from scratch."*
+- Accept any shape: inline links in the draft, a bullet list, "it is all in
+  PR #1234", comments in the doc, or an attached benchmark log. Store the
+  section verbatim. Do not try to structure it.
 
-- Do **not** emit `QUESTION FOR AUTHOR` and do **not** hold the card. Route it
-  to its lane.
-- Note it for the reviewer instead: *"no sourcing supplied — claims need
-  verifying from scratch."* That sets the reviewer's expectation of effort
-  rather than bouncing work back to an author who may have nothing to add.
-- Accept any shape. Inline links in the draft, a bullet list, "it is all in
-  PR #1234", comments in the doc, an attached benchmark log — all valid. The
-  parser stores the section verbatim and does not try to structure it. We do
-  not know what the author drafted in and it does not matter.
-
-`uncertain` is worth surfacing prominently to the reviewer even though it is
-optional: it is the author naming the part they would most want checked, which
-is better targeting than any inference from the diff.
+Show `uncertain` prominently to the reviewer even though it is optional. It
+names the part the author most wants checked.
 
 ### What still applies
 
-The rules that are about publishing rather than generating hold on this path
-too, and technical review enforces them against the draft as written:
+These publishing rules hold on this path too. Technical review enforces them
+against the draft as written.
 
 - No number without its conditions in the same sentence or the adjacent one.
 - `editor_notes` is never rendered.
-- `meta.placement` decides LMCache-canonical versus Tensormesh, and Tensormesh
-  does not originate LMCache content.
 
 ## Template three: a finished post, ready for copyedit
 
-Path E (`.github/ISSUE_TEMPLATE/blog-post-complete.md`). The post is written
-*and* the technical content is already sound — the author built the thing, or
-their org reviewed it, or it went through review elsewhere. No generation, no
-technical review. The pipeline routes it to the copyedit and records who
-vouched for the technical content.
+Path E (`.github/ISSUE_TEMPLATE/blog-post-complete.md`). The post is written,
+and its technical content is already sound: the author built the thing, their
+organization reviewed it, or it was reviewed elsewhere. There is no generation
+and no technical review. The pipeline routes the card to copyedit and records
+who vouched for the technical content.
 
-This is the expected shape for most already-written submissions. Template two
-is the exception, not the rule.
+Most already-written submissions use this path. Template two is the
+exception.
 
 | Field | Machine key | Required |
 |---|---|---|
-| front matter | `meta.*` | `post`, `author`, `language`, `placement`, `verified_by`, `copyedit` |
+| front matter | `meta.*` | `post`, `author`, `language`, `verified_by`, `copyedit` |
 | Where the finished post is | `post_location` | **yes** |
 | What it says in one sentence | `oneliner` | **yes** |
 | Who verified the technical content | `verified_by_who` | **yes** |
@@ -300,19 +278,16 @@ is the exception, not the rule.
 | Numbers and their conditions | `numbers` | no |
 | Images and assets | `assets` | no |
 | Translation notes | `translation_notes` | no |
-| Placement | `placement_why` | no |
 | Notes for the editor | `editor_notes` | no — **never rendered** |
 
 ### Routing
 
-Path E always enters **Editorial review**, then moves to **Translations**.
-There is no `entry_lane`, because there is no choice to make: the copyedit is
-the only stage it still needs.
+Path E always enters **Editorial review**, then moves to **Translations**. It
+has no `entry_lane`, because copyedit is the only stage it needs.
 
-**It does not pass through Technical review.** A card on this path that ends
-up in Technical review means either the author picked the wrong template or
-something re-routed it, and both are worth a comment rather than a silent
-move.
+Path E never passes through Technical review. If a path E card is in
+Technical review, the author picked the wrong template or something re-routed
+it. Post a comment; do not move it silently.
 
 `meta.copyedit` sets how much latitude the editor has:
 
@@ -321,17 +296,12 @@ move.
 | `full` | structure, register, and clarity are the editor's, within house style |
 | `light` | copyedit only — grammar, typos, consistency, formatting |
 
-Honor `light` when it is set. It is the author declining a rewrite, not an
-opening position.
+Honor `light` when it is set. The author has declined a rewrite.
 
-### `verified_by` is an attestation, not a verification
+### `verified_by` records who vouched
 
-This is the one field this path genuinely needs, and it is worth being clear
-about what it does and does not do.
-
-It does **not** verify anything. It records **who vouched**, so that if
-something turns out to be wrong later there is a name attached to the claim
-rather than a shrug.
+`verified_by` does not verify anything. It records who vouched for the
+technical content, so a name is attached if a claim later proves wrong.
 
 | `verified_by` | Means |
 |---|---|
@@ -339,47 +309,42 @@ rather than a shrug.
 | `own-org` | someone at the author's organization reviewed it |
 | `external-review` | reviewed elsewhere — published, presented, or third-party |
 
-Take it at face value. Do not re-derive it from the diff, and do not quietly
-route the card through Technical review because the attestation looks thin —
-that is exactly the wasted round trip this path exists to avoid. If it is
-genuinely missing or contradictory (`verified_by: author` on a post about
-someone else's subsystem), ask in a comment.
+Take it at face value. Do not re-derive it from the diff. Do not route the card
+through Technical review because the attestation looks thin; that is the
+round trip this path exists to avoid. If the field is missing or contradictory
+(for example, `verified_by: author` on a post about someone else's subsystem),
+ask in a comment.
 
-The `sources` field from template two is deliberately **absent** here. Asking
-a verified post for a claims ledger is asking for the technical review this
-path just skipped.
+Template three has no `sources` field, on purpose. A claims ledger would
+require the technical review that this path skips.
 
 ### What still applies
 
-Two rules are about publishing rather than verifying, so they hold on every
-path and the copyeditor enforces them:
+Two publishing rules hold on every path. The copyeditor enforces them here.
 
-- **No number without its conditions** in the same sentence or the adjacent
-  one. The form asks the author to confirm this or supply what is missing —
-  and a missing condition is a question for the author, never a number the
-  editor cuts or guesses at.
-- **`meta.placement`** decides LMCache-canonical versus Tensormesh, and
-  Tensormesh does not originate LMCache content.
+- No number without its conditions in the same sentence or the adjacent one.
+  The form asks the author to confirm this or supply what is missing. A
+  missing condition is a question for the author. The editor never cuts the
+  number or guesses the condition.
 
-`editor_notes` is never rendered, as everywhere else.
+`editor_notes` is never rendered, as on every path.
 
-### One consequence worth tracking
+### Count path E separately
 
-Edit-minutes-per-piece is the metric the claims ledger was built to reduce.
-Path E has no ledger and no technical review by design, so pieces arriving
-this way will show a different cost profile from generated ones for reasons
-that have nothing to do with the pipeline improving. **Count path E pieces
-separately** rather than letting them move the headline number.
+The claims ledger exists to reduce edit minutes per piece. Path E has no
+ledger and no technical review, so its pieces have a different cost profile
+for reasons unrelated to pipeline improvement. **Count path E pieces
+separately** so that they do not move the headline number.
 
 ## Human feedback loops
 
-Every edit made downstream is signal. Three capture points, per the
-pipeline design:
+Every downstream edit is signal. The pipeline design names three capture
+points:
 
-1. **Drafting** — diffs between generated draft and author-revised draft
-2. **Editorial** — diffs between author-revised and editor-approved
-3. **Localization** — idiomatic changes a localizing reviewer makes
+1. Drafting: diffs between the generated draft and the author-revised draft
+2. Editorial: diffs between the author-revised and the editor-approved draft
+3. Localization: idiomatic changes that a localizing reviewer makes
 
-Store the diff, the field it traces back to, and the reason if the editor
-gives one. These feed prompt revisions and few-shot examples, and they are
-how the edit-minutes number comes down over time.
+Store the diff, the field it traces back to, and the editor's reason if one is
+given. These feed prompt revisions and few-shot examples, and they reduce the
+edit-minutes number over time.

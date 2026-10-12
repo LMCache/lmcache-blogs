@@ -1,9 +1,9 @@
-<!-- Thanks for your contribution! A few tips:
-1. Read CONTRIBUTING.md before submitting: ../blob/main/CONTRIBUTING.md#changing-the-pipeline
-2. Base this PR against `main`. Every commit needs a DCO sign-off (`git commit -s`) and no AI co-author trailer -- and none in this PR body either. Maintainer commits carry two sign-offs; see AGENTS.md.
-3. Start the title with a type tag: [Doc], [Bugfix], [Core], [CI], [Build], [Test], [Misc] — or docs:, fix:, feat:, ci:, chore:.
-4. If this PR closes an issue, add 'Fixes #<issue number>'. 'Refs #<issue number>' links it without closing.
-5. After you open this PR, say so in #lmcache-content so a reviewer picks it up. -->
+<!-- Before you submit:
+1. Read CONTRIBUTING.md: ../blob/main/CONTRIBUTING.md#changing-the-pipeline
+2. Base this PR on `main`. Sign off every commit with DCO (`git commit -s`). Do not add an AI co-author trailer to any commit or to this PR body. Maintainer commits carry two sign-offs; see AGENTS.md.
+3. Start the title with a type tag: [Doc], [Bugfix], [Core], [CI], [Build], [Test], [Misc], or docs:, fix:, feat:, ci:, chore:.
+4. To close an issue, add 'Fixes #<issue number>'. To link it without closing, add 'Refs #<issue number>'.
+5. After you open this PR, post the link in #lmcache-content so that a reviewer finds it. -->
 
 **What this PR does / why we need it**:
 
@@ -15,5 +15,5 @@
 - [ ] every commit is signed off, with no AI co-author trailer in the commits or this body
 - [ ] this PR changes the skeleton — both copies updated and byte-identical
 - [ ] this PR changes a `##` heading in the skeleton — parse contract updated in the same PR
-- [ ] this PR contains user facing changes - docs added
+- [ ] this PR contains user-facing changes, and docs are added
 - [ ] this PR contains tests

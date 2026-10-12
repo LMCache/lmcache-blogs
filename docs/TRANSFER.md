@@ -1,41 +1,36 @@
 # Moving this repository to the LMCache organization
 
-Written while preparing the move, so the steps are the ones that were actually
-verified rather than the ones that sounded right.
+**Status:** The transfer is done. The repository is `LMCache/lmcache-blogs`,
+and the board is `github.com/orgs/LMCache/projects/6`.
 
-The repository is **transfer-ready**: nothing in the code names an owner any
-more. What follows is what a human still has to do, in order, and what will
-break if a step is skipped.
+This document records the procedure used for the move. Use it again for any
+similar move. No code in the repository names an owner. The steps below are
+the manual work, in order, and what breaks if you skip one.
 
 ## What GitHub moves for you
 
-Confirmed against GitHub's own documentation:
+According to GitHub's documentation:
 
-- **Issues, pull requests, wiki, stars, and watchers** come along.
-- **All links to the old location redirect** to the new one — including `git
-  remote` URLs, so nobody's clone breaks.
-- **Webhooks, secrets, and deploy keys stay associated** after the transfer.
-  This one is easy to assume otherwise; `PROJECT_TOKEN` survives.
+- Issues, pull requests, wiki, stars, and watchers move with the repository.
+- All links to the old location redirect to the new one, including `git
+  remote` URLs, so existing clones keep working.
+- Webhooks, secrets, and deploy keys stay associated after the transfer.
+  `PROJECT_TOKEN` survives.
 - Git history, forks, and LFS objects are preserved.
 
-## What does not move, and will silently break
+## What does not move
 
-**The project board.** A GitHub Projects V2 board belongs to a *user or an
-organization*, never to a repository. Transferring the repo leaves the board
-exactly where it is. The cards keep pointing at the issues, and the workflow
-keeps writing to the old board, because as far as it is concerned nothing
-happened.
+The project board does not move. A GitHub Projects V2 board belongs to a user
+or an organization, never to a repository. After a transfer, the board stays
+where it was, and the workflow keeps writing to it. Nothing reports an error.
 
-This is the one that bites, because nothing errors.
+### Copy the board; you cannot transfer it
 
-### The board cannot be transferred, but it can be copied
+The GraphQL schema has no `transferProjectV2` mutation. A board stays with the
+account that created it.
 
-There is no `transferProjectV2`. The GraphQL schema has no such mutation —
-checked by introspection, not assumed — and a board stays with the account that
-created it, permanently.
-
-`copyProjectV2` does exist, takes an `ownerId`, and that owner may be an
-organization. A copy carries **more than is obvious**:
+`copyProjectV2` exists and takes an `ownerId`, which can be an organization. A
+copy includes:
 
 | Copied | Not copied |
 |---|---|
@@ -45,29 +40,25 @@ organization. A copy carries **more than is obvious**:
 | Insights | |
 | Draft issues, only if asked | |
 
-Copying is worth doing rather than rebuilding by hand, for one specific reason:
-**the router matches columns by name and raises if one is missing.** Retyping
-seven column names is an invitation to land `Editorial Review` where the code
-expects `Editorial review`, and find out when the first card fails to route. A
-copy reproduces them exactly.
+Copy the board instead of rebuilding it by hand. The router matches columns by
+name and raises an error if one is missing. A retyped `Editorial Review` would
+not match the expected `Editorial review`. A copy reproduces the names exactly.
 
-That the items do not come across costs nothing here — the hourly sweep adds
-every open issue that is not already on the board, so the cards rebuild
-themselves on the next run.
+The copy has no items, but the hourly sweep adds every open issue that is not
+on the board, so the cards return on the next run.
 
 ## Before the transfer
 
-1. **Karsten needs membership in the LMCache org with permission to create
-   repositories.** GitHub requires create-repo rights in the *target* org to
-   transfer into it. Without it the transfer cannot be initiated at all — this
-   is a hard blocker, not a formality.
-2. Decide who ends up with **admin** on the repo afterwards. A transfer makes
-   the receiving org's owners admins; confirm the humans who need it have it.
+1. Karsten needs membership in the LMCache org with permission to create
+   repositories. GitHub requires create-repo rights in the target org. Without
+   them, the transfer cannot start.
+2. Decide who has **admin** on the repo afterward. A transfer makes the
+   receiving org's owners admins. Confirm that everyone who needs admin has it.
 
 ## The transfer
 
-Initiated by the source owner, from Settings → General → Danger Zone →
-Transfer, or:
+The source owner starts it from Settings → General → Danger Zone → Transfer,
+or with:
 
 ```bash
 gh api -X POST repos/quaid/lmcache-blogs/transfer -f new_owner=LMCache
@@ -75,8 +66,8 @@ gh api -X POST repos/quaid/lmcache-blogs/transfer -f new_owner=LMCache
 
 ## After the transfer, in order
 
-1. **Copy the board into the org**, rather than rebuilding it. From the board's
-   ⋯ menu → *Make a copy*, choosing `LMCache` as the owner — or:
+1. Copy the board into the org. From the board's ⋯ menu, choose *Make a copy*
+   with `LMCache` as the owner, or run:
 
    ```bash
    # The source board's node id, and the org's:
@@ -93,17 +84,15 @@ gh api -X POST repos/quaid/lmcache-blogs/transfer -f new_owner=LMCache
         -F title="LMCache Blogs [Editorial Kanban]"
    ```
 
-   Then confirm the seven columns survived, in order:
+   Confirm that the seven columns exist, in this order, with these exact
+   names:
 
    ```
    Idea → Claimed → Drafting → Editorial review → Technical review → Translations → Published
    ```
 
-   The names must match exactly — the router looks them up by name and raises
-   rather than guessing if one is missing.
-
-   **Link the board to `lmcache-blogs`, and only to it.** Links are not copied,
-   so a copied board starts linked to nothing.
+   Link the board to `lmcache-blogs` and to no other repository. Links are not
+   copied, so a copied board starts with no links.
 
    ```bash
    # The blogs repo's node id -- check the output says lmcache-blogs
@@ -118,52 +107,46 @@ gh api -X POST repos/quaid/lmcache-blogs/transfer -f new_owner=LMCache
      }' -F p=<NEW_PROJECT_ID> -F r=<BLOGS_REPO_ID>
    ```
 
-   **Do not link it to `LMCache/LMCache`.** The engine repo's Projects tab is
-   for engine work; an editorial board with columns like *Translations* and
-   *Published* appearing there is noise for every contributor who opens it, and
-   it invites blog issues being filed against the engine repo.
+   Do not link it to `LMCache/LMCache`. That repo's Projects tab is for engine
+   work. An editorial board there adds noise for engine contributors and
+   invites people to file blog issues against the engine repo.
 
-   A note on what "in the repo" can and cannot mean here: **a repository cannot
-   own a board.** `ProjectV2Owner` resolves to an Organization or a User and
-   nothing else — `Repository` is not among them, checked by introspection. So
-   the board is owned by the `LMCache` org no matter what, and lives at
-   `github.com/orgs/LMCache/projects/N`. Linking is the whole of the control
-   available: it is what makes the board appear on the blogs repo's Projects
-   tab, and what keeps it off everyone else's.
+   A repository cannot own a board. `ProjectV2Owner` resolves only to an
+   Organization or a User. The `LMCache` org owns the board, at
+   `github.com/orgs/LMCache/projects/N`. Linking is the only control: it shows
+   the board on the blogs repo's Projects tab and keeps it off other repos'
+   tabs.
 
-2. **Set `BOARD_NUMBER`** (Settings → Secrets and variables → Actions →
-   Variables) to the new board's number. Leave `BOARD_OWNER` unset; it defaults
-   to the repository owner, which is now `LMCache`.
+2. Set `BOARD_NUMBER` (Settings → Secrets and variables → Actions → Variables)
+   to the new board's number. Leave `BOARD_OWNER` unset. It defaults to the
+   repository owner, which is now `LMCache`.
 
-3. **Keep the classic `PROJECT_TOKEN`.** It survives the transfer and works
-   against the org board — it is what routed `orgs/LMCache/projects/6` after
-   this move. Do not expect to swap it for a fine-grained token: the org-level
-   `Projects` permission is offered only to org **owners**, and a Member creating
-   one with `LMCache` as resource owner will not see it.
+3. Keep the classic `PROJECT_TOKEN`. It survives the transfer and works with
+   the org board; it routed `orgs/LMCache/projects/6` after this move. A
+   fine-grained token is not available to org Members: GitHub offers the
+   org-level `Projects` permission only to org owners.
 
-   To get off a personal token, ask an org owner to install a **GitHub App** on
-   the org with Projects permission. That is the long-term answer; until then the
-   classic token is fine.
+   To stop using a personal token, ask an org owner to install a GitHub App on
+   the org with Projects permission. Until then, the classic token works.
 
-4. **Let the sweep rebuild the cards.** Copying a board does not bring its
-   items, so the new board starts empty. The hourly sweep adds every open issue
-   that is not already on it; no card needs moving by hand.
+4. Let the sweep rebuild the cards. The copied board starts empty. The hourly
+   sweep adds every open issue that is not on it. Do not move cards by hand.
 
-5. **Archive or delete the old board** once the new one is routing, so nobody
-   files against a board that nothing writes to any more.
+5. Archive or delete the old board after the new one routes cards, so that
+   nobody files against a board that nothing updates.
 
-6. **Dry-run before trusting it:**
+6. Do a dry run before a real run:
 
    ```bash
    gh workflow run content-board.yml --repo LMCache/lmcache-blogs -f dry_run=true
    ```
 
-   Read the run summary. Both current issues are `pipeline`-labelled, so the
-   correct outcome is that they stay **off** the board with no triage flag. If
-   the dry run wants to file them under `Idea`, the routing table and the board
-   disagree about something — fix that before a real run.
+   Read the run summary. At the time of the move, both open issues had the
+   `pipeline` label, so the correct result was that both stay off the board
+   with no triage flag. If the dry run puts them in `Idea`, the routing table
+   and the board disagree. Fix that before a real run.
 
-7. **Re-point local clones** (optional; the redirect handles it):
+7. Optional: update local clones. The redirect already handles this.
 
    ```bash
    git remote set-url origin git@github.com:LMCache/lmcache-blogs.git
@@ -171,27 +154,25 @@ gh api -X POST repos/quaid/lmcache-blogs/transfer -f new_owner=LMCache
 
 ## Decisions the move forces
 
-Neither is mechanical, and neither should be made by whoever happens to run the
-transfer.
+Make both decisions deliberately. They are not part of running the transfer.
 
 **The dual sign-off convention.** `AGENTS.md` requires two `Signed-off-by`
-trailers, on the reasoning that this repo sits in two contexts at once — a
-personal namespace holding LMCache content produced for Tensormesh. Once the
-repo is owned by LMCache that justification no longer holds: there is one
-context, and the convention collapses to a single sign-off under the
-LMCache/Tensormesh identity. The rule is left as-is here so nothing changes
-mid-move. Revisit it deliberately afterwards.
+trailers, because the repo sat in two contexts: a personal namespace that held
+LMCache content produced for Tensormesh. With LMCache as the owner, that
+reason no longer holds. There is one context, and the convention could become
+a single sign-off under the LMCache/Tensormesh identity. The rule is unchanged
+for now, so nothing changed mid-move. Revisit it after the move.
 
 **Where Code of Conduct and security reports go.** `CODE_OF_CONDUCT.md` and
-`SECURITY.md` currently route to `karsten@tensormesh.ai`, which was right for a
-personal repo. An LMCache-owned repository should route to whatever the project
-uses, so that enforcement does not depend on one person's mailbox.
+`SECURITY.md` send reports to `karsten@tensormesh.ai`, which suited a personal
+repo. An LMCache-owned repository should send them to the project's own
+contact, so enforcement does not depend on one person's mailbox.
 
 ## What is still not built
 
-Unchanged by the move, listed so it is not mistaken for transfer damage:
+The move did not change these, and they are not transfer damage:
 
-- Nothing moves a card *forward*; routing sets the entry column only.
+- Nothing moves a card forward. Routing sets the entry column only.
 - No stall detection, though the process doc promises a nudge at two days.
-- No closed-issue policy — whether "closed" means published or abandoned is
+- No closed-issue policy. Whether "closed" means published or abandoned is
   [an open question](../../../issues).

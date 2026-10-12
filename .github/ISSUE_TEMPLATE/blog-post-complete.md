@@ -1,32 +1,33 @@
 ---
 name: Finished blog post — ready for copyedit
-about: Technically complete and already verified. Needs a copyedit, then translation and publishing.
+about: A finished post that is already technically verified. It needs a copyedit only.
 title: "[blog][final] "
 labels: ["blog", "complete", "tech-verified"]
 ---
 
 <!--
-USE THIS ONE IF THE POST IS DONE AND THE TECHNICAL CONTENT IS ALREADY SOUND.
+USE THIS TEMPLATE IF THE POST IS DONE AND THE TECHNICAL CONTENT IS ALREADY
+CORRECT.
 
-That is the normal case for a post written by the person who built the thing,
-and for a post coming from another organization that already reviewed it.
-Those do not need our technical review, and sending them through it wastes
-your time and the reviewer's.
+This is the normal template for a post by the person who built the feature,
+or a post that another organization already reviewed. These posts do not
+need our technical review.
 
-Pick a different template if:
+Use a different template if:
 
-  - the post still needs someone to check the technical claims
+  - someone still needs to check the technical claims
     -> "Blog post draft - needs technical review"
   - you have notes or a PR and want someone else to write the post
     -> "Blog post from a PR"
 
-Your card enters Editorial review for the copyedit, then goes to
-Translations. It does not pass through Technical review.
+Your card goes to Editorial review for the copyedit, then to Translations.
+It does not go through Technical review.
 
-Most of this is one line per section. Only the third one needs thought.
+Most sections need one line. Only "Who verified the technical content"
+needs thought.
 
-Do not delete any headings. The pipeline reads them by name. Leave a heading
-empty rather than removing it.
+Do not delete or rename any heading. The pipeline reads them by name.
+Leave a section empty instead.
 -->
 
 ```yaml
@@ -34,7 +35,6 @@ post:                 # link to it, or attach the file to this issue
 author:
 language: en          # the language the POST is written in: en, zh, ko, ja, de...
 post_type: how-to     # how-to | why-to | deep-dive | release-note
-placement: lmcache    # lmcache | tensormesh — see "Placement" below
 verified_by: author   # author | own-org | external-review — see below
 copyedit: full        # full | light
 publish_by: # date, or leave blank
@@ -44,101 +44,77 @@ repo: LMCache/LMCache
 
 ## Where the finished post is [CORE]
 
-<!-- A link, or say "attached" and drag the file onto this issue. Google Doc,
-markdown, HTML, Notion, a published URL elsewhere — whatever you have. We do
-not care what you wrote it in.
+<!-- A link, or write "attached" and drag the file onto this issue. Any
+format: Google Doc, markdown, HTML, Notion, or a URL where it is already
+published.
 
-A pull request that adds the post under content/drafts/ also works, and is the
-easiest to review line by line. See content/README.md for the layout.
+A pull request that adds the post under content/drafts/ also works, and is
+the easiest to review line by line. See content/README.md for the layout.
 
-If it exists in more than one place, say which one is authoritative. Two
-versions of a finished post is the most expensive kind of confusion here. -->
+If the post is in more than one place, say which copy is the main one. -->
 
 ## What it says in one sentence [CORE]
 
-<!-- The hallway version. Used for title candidates and the meta description,
-and it tells the copyeditor what they are about to read. -->
+<!-- One plain sentence. We use it for the title, the meta description,
+and to tell the copyeditor what the post is about. -->
 
 ## Who verified the technical content [CORE]
 
-<!-- The one section that matters here, and it is usually one line.
+<!-- Usually one line. Set `verified_by` above, and name the person in one
+sentence. We accept your statement and record it.
 
-You are telling us this post does not need technical review. That is almost
-always true and we are taking your word for it — this section is just the
-record of whose word it was. Set `verified_by` above and say who, in a
-sentence:
+  author          — you built the feature in this post. "I wrote the
+                    feature" is enough.
+  own-org         — someone at your organization reviewed it. Give their
+                    name or role.
+  external-review — it was reviewed elsewhere: published on another site,
+                    presented at a conference, or reviewed by a third
+                    party. Say where.
 
-  author          — you built the thing this post is about, so the technical
-                    content is yours and you already know it is right.
-                    "I wrote the feature" is a complete answer.
-  own-org         — someone at your organization reviewed it before it came
-                    to us. Name them or their role.
-  external-review — it went through review somewhere else: published on
-                    another site, presented at a conference, reviewed by a
-                    third party. Say where.
-
-If you find yourself unsure what to put here, that is a useful signal: the
-post probably wants the draft template and a technical review instead. No
-harm in that, and it is faster than a correction after publishing. -->
+If you do not know what to write here, use the "Blog post draft - needs
+technical review" template instead. -->
 
 ## How much editing are you comfortable with [CORE]
 
-<!-- Set `copyedit` above and add anything specific.
+<!-- Set `copyedit` above. Add details if needed.
 
-  full  — treat it like any other post. Structure, register, and clarity are
-          ours to adjust, within house style.
-  light — copyedit only. Grammar, typos, consistency, formatting. Leave the
-          structure and the phrasing alone.
+  full  — we can change structure, style, and wording, within house style.
+  light — copyedit only: grammar, typos, consistency, and formatting. We do
+          not change structure or wording.
 
-Either is fine and nobody will argue with you. Saying which one saves a round
-trip. If particular passages should not be touched — a quote, a carefully
-worded caveat, a line you fought for — name them. -->
+If some passages must not change (a quote, a careful caveat), list them. -->
 
 ## Numbers and their conditions
 
-<!-- Not a re-review of your numbers. This is one specific check that applies
-to every post regardless of who verified it: we do not publish a figure
-without the conditions it holds under — hardware, model, batch size, workload
-shape.
+<!-- We do not re-check your numbers. But we do not publish a number
+without its test conditions: hardware, model, batch size, workload.
 
-So: does every number in the post already carry its conditions nearby? If yes,
-say "yes, in the post". If some are missing, supply them here rather than
-making the copyeditor guess or cut the number.
+Does every number in the post state its conditions? If yes, write "yes,
+in the post". If not, give the missing conditions here.
 
-If there are no numbers, say "none". -->
+If the post has no numbers, write "none". -->
 
 ## Images and assets
 
-<!-- Diagrams, screenshots, charts. Attach or link them, and say whether they
-are final or want redrawing. If something needs redrawing, describe what it
-should show in a sentence or two and we will draw it.
+<!-- Attach or link any diagrams, screenshots, or charts. Say whether each
+one is final or needs redrawing. For a redraw, describe in one or two
+sentences what it should show, and we will draw it.
 
-If the post has no images and you think it wants one, say what it would
-show. -->
+If the post has no images but needs one, say what it should show. -->
 
 ## Translation notes
 
-<!-- Your card goes to Translations after the copyedit, so this is worth
-thirty seconds.
+<!-- Optional. The post goes to Translations after the copyedit.
 
-Anything that should NOT be translated — product names, flags, config keys,
-API names, a term of art you want left in English? Any languages you
-specifically want this in, or a colleague who should review a particular
-localization? Leave blank if you have no preference. -->
-
-## Placement
-
-<!-- Is this LMCache-canonical or Tensormesh? Set `placement` above.
-
-LMCache content is published as LMCache's. Tensormesh does not originate
-LMCache content — so if you are unsure, say so here rather than guessing, and
-it gets settled before anything is scheduled.
-
-If the post has already been published somewhere else, say where and when. A
-republished piece is handled differently from an original. -->
+List anything that must stay in English: product names, flags, config
+keys, API names, terms. Name any languages you want, or a colleague who
+should review a translation. -->
 
 ## Notes for the editor
 
-<!-- Not published. Anything we should avoid saying, a customer we should not
-name, an embargo date, a competitor comparison you would rather we did not
-draw, how to spell your name and what title you want on the byline. -->
+<!-- Optional. This issue is public: do not write anything here that you
+would not publish. Use this section for practical notes, such as when the
+post should go out or a question for the editor.
+
+If the post is already published somewhere else, say where and when. We
+handle a republished post differently from a new one. -->

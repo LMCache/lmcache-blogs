@@ -7,6 +7,7 @@ in [`../docs/`](../docs/).
 |---|---|
 | `skeletons/` | Filled-in skeletons committed through intake path C, named `<pr-number>.md`. |
 | `drafts/` | Written posts submitted for review as a PR (paths D and E), one folder per post. |
+| `assets/shared/` | Reusable images that serve many posts, one subfolder per use. |
 
 ## skeletons/
 
@@ -65,6 +66,21 @@ each approval moves the post's card to its next stage. The PR stays open until
 the post is published; merging it moves the card to Published. The issue
 remains the tracking record. How the card moves is in
 [`../docs/pipeline/board-automation.md`](../docs/pipeline/board-automation.md).
+
+## assets/shared/
+
+Images that are not tied to one post: a featured image used every time a kind
+of post comes up. Each use gets its own subfolder, holding the PNG to upload,
+a 2x PNG, the editable SVG, and a `README.md` with the alt text and the
+media-library description.
+
+| Subfolder | Use it for |
+|---|---|
+| `cve-advisory/` | Every CVE or security advisory post |
+
+These images follow the LMCache design system, not the whiteprint style. The
+whiteprint is for technical figures that explain a mechanism; a shared
+featured image is brand material.
 
 ## Not here yet
 

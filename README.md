@@ -34,6 +34,7 @@ docs/                                 the process
   pipeline/skeleton-to-prompt.md         machine-facing: parse and prompt contracts
   templates/blog-post-skeleton.md        downloadable copy of the skeleton
 content/skeletons/                    filled skeletons committed via intake path C
+content/drafts/                       written posts submitted as a PR for review (paths D and E)
 tools/                                repo invariant checks used by pre-commit
 .claude/skills/                        committed agent skills for the PR flow
 ```

@@ -104,7 +104,8 @@ not, you want [Path E](#path-e--a-finished-post-ready-for-copyedit) — most
 already-written posts do.
 
 1. Open a new issue and choose **Blog post draft — needs technical review**.
-2. Link the draft, or drag the file onto the issue.
+2. Link the draft, drag the file onto the issue, or open a PR that adds it under
+   [`content/drafts/`](../content/README.md#drafts) and link the PR.
 3. Pick the lane — `editorial` if nobody has edited it (the normal choice),
    `technical` if an editor already has. Either way it passes through
    Technical review; that is the point of this path.
@@ -125,7 +126,8 @@ is the normal path for a post written by the person who built the thing, and
 for a post from another organization that already reviewed it.
 
 1. Open a new issue and choose **Finished blog post — ready for copyedit**.
-2. Link the post, or drag the file onto the issue.
+2. Link the post, drag the file onto the issue, or open a PR that adds it under
+   [`content/drafts/`](../content/README.md#drafts) and link the PR.
 3. Say **who verified the technical content** — you, because you built it;
    someone at your org; or an external review. Usually one line. We take your
    word for it; this is just the record of whose word it was.

@@ -48,6 +48,9 @@ repo: LMCache/LMCache
 markdown, HTML, Notion, a published URL elsewhere — whatever you have. We do
 not care what you wrote it in.
 
+A pull request that adds the post under content/drafts/ also works, and is the
+easiest to review line by line. See content/README.md for the layout.
+
 If it exists in more than one place, say which one is authoritative. Two
 versions of a finished post is the most expensive kind of confusion here. -->
 

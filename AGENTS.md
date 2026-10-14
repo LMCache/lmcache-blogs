@@ -158,6 +158,10 @@ principles — be concrete and concise, include examples, explain the *why* and 
 - **Short words, short sentences.** No "leverage", "utilize", "seamlessly", "revolutionary",
   or "in today's fast-paced world". This applies to the docs *and* to anything the pipeline
   generates.
+- **Write "KV cache" and "KV caching".** Lowercase "cache", no hyphen, in prose, headings,
+  captions, alt text, and anything the pipeline generates. Hyphenate only when grammar needs
+  it for clarity, as in a stacked modifier ("KV-cache-aware routing"). Title-case headlines
+  capitalize it like any other word. Code, flags, and identifiers keep their own spelling.
 - **Second person, present tense**, in both docs and generated posts.
 - **Do not translate a contributor's words into house style.** House style governs
   structure, register, and clarity. It does not govern an author's own description of their

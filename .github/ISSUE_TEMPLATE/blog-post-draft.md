@@ -51,6 +51,9 @@ publish_by: # date, or leave blank
 markdown file, HTML, Notion page — whatever you have. If it is a doc, share
 it so anyone at Tensormesh with the link can comment.
 
+A pull request that adds the post under content/drafts/ also works, and is the
+easiest to review line by line. See content/README.md for the layout.
+
 If the draft lives in more than one place, say which one is authoritative.
 Two versions of a finished post is the most expensive kind of confusion
 here. -->

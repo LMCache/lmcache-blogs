@@ -36,6 +36,7 @@ docs/                                 the process
   templates/blog-post-skeleton.md        downloadable copy of the skeleton
 content/skeletons/                    filled skeletons committed via intake path C
 content/drafts/                       written posts submitted as a PR for review (paths D and E)
+events/                               slides and an index for each LMCache community event
 tools/                                repo invariant checks used by pre-commit
 .claude/skills/                       committed agent skills for the PR flow
 MAINTAINERS.md                        who maintains this repo and how to reach them

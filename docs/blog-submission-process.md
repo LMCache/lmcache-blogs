@@ -126,7 +126,7 @@ fields.
 ## What happens to your card
 
 ```
-Idea → Claimed → Drafting → Editorial review → Technical review → Translations → Published
+Idea → Claimed → Drafting → Editorial review → Technical review → Copyedit → Translations → Published
                     ↑              ↑    ↑              ↑
                 Paths A/B/C   Path D    Path E     Path D
                               (editorial)          (technical)
@@ -135,6 +135,13 @@ Idea → Claimed → Drafting → Editorial review → Technical review → Tran
 Path D always goes through **Technical review**. Path E skips it. No path
 enters at **Idea** or **Claimed**: those columns hold proposed posts and posts
 that someone has taken, before anyone writes.
+
+Your card mostly moves on its own. When you open your draft PR, the card goes to
+Editorial review. Each time a maintainer approves the PR, it moves to the next
+stage, and when the PR merges, it goes to Published. Each time it enters a stage,
+the issue gets a short checklist for that stage. Editors can also move a card by
+hand, and the automation follows along. The details are in
+[`pipeline/board-automation.md`](pipeline/board-automation.md).
 
 You get a Slack DM when your card moves or needs you. If a card waits on you
 for more than two days, you get a reminder.

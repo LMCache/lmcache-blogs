@@ -36,6 +36,9 @@ import re
 import subprocess
 import sys
 
+# Third Party
+import board_stages as stages
+
 # The board is located at runtime, never hardcoded, so this repo survives being
 # transferred to another owner. See docs/pipeline/board-routing.md.
 #
@@ -54,10 +57,12 @@ BOARD_NUMBER_ENV = "BOARD_NUMBER"
 # refined further by its `entry_lane` front matter; see route().
 TEMPLATE_LABELS = ("skeleton", "needs-tech-review", "tech-verified")
 
-COLUMN_DRAFTING = "Drafting"
-COLUMN_EDITORIAL = "Editorial review"
-COLUMN_TECHNICAL = "Technical review"
-COLUMN_IDEA = "Idea"
+# Column names come from the stage rules, so there is one list of them.
+COLUMN_IDEA = stages.IDEA
+COLUMN_DRAFTING = stages.DRAFTING
+COLUMN_EDITORIAL = stages.EDITORIAL
+COLUMN_TECHNICAL = stages.TECHNICAL
+COLUMN_TRANSLATIONS = stages.TRANSLATIONS
 
 TRIAGE_LABEL = "needs-triage"
 
@@ -127,6 +132,15 @@ def route(labels: frozenset[str], entry_lane: str | None) -> Decision:
     Returns:
         The routing decision, always with a populated reason.
     """
+    if stages.TRANSLATION_LABEL in labels:
+        # A translation sub-issue usually copies its post's labels, intake
+        # labels included. It is still a translation, so this comes first.
+        return Decision(
+            column=COLUMN_TRANSLATIONS,
+            needs_triage=False,
+            reason="a translation of a post, so it starts in Translations",
+        )
+
     template_labels = sorted(labels & frozenset(TEMPLATE_LABELS))
 
     if len(template_labels) > 1:
@@ -186,13 +200,12 @@ def route(labels: frozenset[str], entry_lane: str | None) -> Decision:
         )
 
     if "blog" in labels:
+        # Maintainers file posts by hand with only the blog label. That is the
+        # normal way an idea starts, so it lands in Idea without a triage flag.
         return Decision(
             column=COLUMN_IDEA,
-            needs_triage=True,
-            reason=(
-                "labelled blog but carries no intake label, so which template it "
-                "came from is unknown"
-            ),
+            needs_triage=False,
+            reason="a post filed by hand with the blog label, so it starts as an Idea",
         )
 
     if "pipeline" in labels:
@@ -491,6 +504,13 @@ def handle_issue(repo: str, number: int, dry_run: bool) -> Decision:
     labels = frozenset(label["name"] for label in issue["labels"])
     decision = route(labels, parse_entry_lane(issue["body"] or ""))
 
+    # Placement is for issues not on the board yet. Once a card exists, its
+    # column belongs to whoever moved it last, human or automation, so an
+    # edit or a new label must never send it back to its entry column.
+    if decision.column is not None and number in board_issue_numbers(repo):
+        print(f"#{number} is already on the board; left where it is")
+        return decision
+
     target = decision.column or "(off board)"
     flag = " [needs-triage]" if decision.needs_triage else ""
     print(f"#{number} -> {target}{flag}: {decision.reason}")
@@ -505,39 +525,58 @@ def handle_issue(repo: str, number: int, dry_run: bool) -> Decision:
 
 
 def board_issue_numbers(repo: str) -> set[int]:
-    """Return the issue numbers already present on the board.
+    """Return the numbers of this repository's issues already on the board.
+
+    Pages through every item, so it stays correct past 100 cards. Only issues
+    from ``repo`` count: an issue from another repository with the same number
+    must not make this repository's issue look placed.
 
     Args:
         repo: Repository in ``owner/name`` form, used to resolve the board.
 
     Returns:
-        Numbers of every issue currently an item on the board. Pull requests and
-        draft items are ignored.
+        Issue numbers. Pull requests, draft items, and other repositories'
+        issues are ignored.
     """
     owner, number = board_location(repo)
-    data = graphql(
-        """
-        query($owner: String!, $number: Int!) {
-          repositoryOwner(login: $owner) {
-            ... on ProjectV2Owner {
-              projectV2(number: $number) {
-                items(first: 100) {
-                  nodes { content { ... on Issue { number } } }
+    found: set[int] = set()
+    cursor = "null"
+    while True:
+        data = graphql(
+            """
+            query($owner: String!, $number: Int!, $cursor: String) {
+              repositoryOwner(login: $owner) {
+                ... on ProjectV2Owner {
+                  projectV2(number: $number) {
+                    items(first: 100, after: $cursor) {
+                      pageInfo { hasNextPage endCursor }
+                      nodes {
+                        content {
+                          ... on Issue {
+                            number repository { nameWithOwner }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
-          }
-        }
-        """,
-        owner=owner,
-        number=str(number),
-    )
-    nodes = data["repositoryOwner"]["projectV2"]["items"]["nodes"]
-    return {
-        node["content"]["number"]
-        for node in nodes
-        if node.get("content") and "number" in node["content"]
-    }
+            """,
+            owner=owner,
+            number=str(number),
+            cursor=cursor,
+        )
+        page = data["repositoryOwner"]["projectV2"]["items"]
+        for node in page["nodes"]:
+            issue = node.get("content") or {}
+            if "number" not in issue:
+                continue
+            if issue["repository"]["nameWithOwner"].lower() == repo.lower():
+                found.add(issue["number"])
+        if not page["pageInfo"]["hasNextPage"]:
+            return found
+        cursor = page["pageInfo"]["endCursor"]
 
 
 def sweep(repo: str, dry_run: bool) -> int:

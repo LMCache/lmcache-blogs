@@ -1,7 +1,9 @@
 # Board routing
 
 This document explains how an issue becomes a card in the right column, and
-what happens to issues that fit no rule.
+what happens to issues that fit no rule. Placement is all the router does. How
+a card moves after that, including when a person moves it, is in
+[`board-automation.md`](board-automation.md).
 
 The mechanism is `.github/workflows/content-board.yml` plus
 [`tools/board_router.py`](../../tools/board_router.py). The board is
@@ -96,6 +98,7 @@ column, because a label cannot say which review a draft needs.
 
 | Labels | Column | Triage? |
 |---|---|---|
+| `l10n` (a translation sub-issue) | Translations | no |
 | `skeleton` | Drafting | no |
 | `needs-tech-review` + `entry_lane: editorial` | Editorial review | no |
 | `needs-tech-review` + `entry_lane: technical` | Technical review | no |
@@ -103,7 +106,7 @@ column, because a label cannot say which review a draft needs.
 | `needs-tech-review` + an unrecognised `entry_lane` | Editorial review | **yes** |
 | `tech-verified` | Editorial review | no |
 | more than one of the three intake labels | Idea | **yes** |
-| `blog`, but no intake label | Idea | **yes** |
+| `blog`, but no intake label | Idea | no — how maintainers file posts by hand |
 | `pipeline` | *off the board* | no |
 | neither `blog` nor `pipeline` | *off the board* | **yes** |
 
@@ -134,8 +137,9 @@ could skip a review on something about to be published.
 Two intake labels make the author's intent unknown. The router does not let one
 label win by branch order. It routes the issue to Idea and triages it.
 
-The `issues` event handles new and changed issues. The hourly `sweep` job
-routes every open issue that is not already on the board. This covers issues
+The `issues` event handles new issues. The `sweep`, which runs every 15
+minutes with the reconciler, routes every open issue that is not already on the
+board. This covers issues
 that predate the workflow, arrived while it was failing, or were missed.
 `workflow_dispatch` runs the sweep on demand. Its `dry_run` input logs each
 decision and changes nothing.
@@ -148,18 +152,15 @@ declare and creates any that are missing.
 
 ## What this does not do
 
-- The router never moves a card forward through the lanes. It sets a card's
-  entry column only.
-- The `issues` event re-routes on every `opened`, `reopened`, `labeled`,
-  `unlabeled`, or `edited` event. It sets the column even if the card is
-  already on the board, so an edit to an issue resets a card that a human
-  moved. The sweep skips issues that are already on the board.
-- The sweep reads at most 200 open issues and the first 100 board items. Past
-  100 items, it sees some on-board issues as missing and re-routes them.
+- The router only places issues that are not on the board yet. Once a card
+  exists, an edit or a label change leaves it where it is: its column belongs to
+  whoever moved it last. Everything after placement is
+  [`board-automation.md`](board-automation.md).
+- The sweep reads at most 200 open issues. It pages through every board item,
+  and it counts only this repository's issues as placed, so an issue from
+  another repository with the same number does not hide one of ours.
 - No stall detection. The process doc promises a nudge when a card waits on
-  someone for more than two days. That needs Slack and is not built.
-- No closed-issue handling. A closed issue keeps its card where it was. Whether
-  "closed" means abandoned or published is an open policy question.
+  someone for more than two days. That needs Slack and is not built (#6).
 
 ## Running it locally
 

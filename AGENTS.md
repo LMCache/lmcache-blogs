@@ -52,9 +52,11 @@ docs/README.md                        map of the docs
 docs/blog-submission-process.md       contributor-facing: the five intake paths
 docs/pipeline/                        machine-facing pipeline contracts
 docs/templates/blog-post-skeleton.md  attachable copy of the skeleton (intake path C)
-tools/                                repo invariant checks, and the board router
+tools/                                repo invariant checks, the board router,
+                                      and the board automation
 tests/                                pytest suite for the pipeline tooling
-.github/workflows/content-board.yml   routes issues onto the content board
+.github/workflows/content-board.yml   places and moves cards on the content board
+docs/pipeline/stage-checklists.md     the checklist posted when a card enters a column
 .claude/skills/                        committed agent skills for the PR flow
 ```
 
@@ -238,6 +240,12 @@ is published with errors.
   its test: `tests/test_board_router.py` checks totality exhaustively. Never add
   a silent fall-through. Never let the router guess a review lane, because a
   wrong guess skips review on a post that is about to be published.
+- Never revert a person's move on the board. The column is the source of
+  truth: the reconciler follows a manual move and may flag it with a comment, but
+  it never moves the card back. Keep stage decisions in `tools/board_stages.py`,
+  which makes no network calls, and test every new transition in
+  `tests/test_board_stages.py`. The reconciler's first sight of a card must stay
+  quiet: record it, sync its label, and post nothing.
 - Do not change the upstream LMCache board. Treat issues and PRs in
   `LMCache/LMCache` as read-only reference. You may comment. Never relabel,
   assign, transition, or close an issue that this project does not own.

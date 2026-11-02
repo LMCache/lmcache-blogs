@@ -8,6 +8,8 @@ Each document has one audience. Start with the row that describes you.
 | [`templates/blog-post-skeleton.md`](templates/blog-post-skeleton.md) | A contributor using intake path C. The skeleton as a file to download and fill in. Byte-identical to the issue template. |
 | [`pipeline/skeleton-to-prompt.md`](pipeline/skeleton-to-prompt.md) | Whoever builds or debugs the pipeline. Parse contract, PR hydration, prompt assembly, output contract, claims ledger, and the two smaller contracts for written posts. |
 | [`pipeline/board-routing.md`](pipeline/board-routing.md) | Whoever needs to know why a card is in its column. The label-to-column table, what happens to issues that match no rule, and the one secret the automation needs. |
+| [`pipeline/board-automation.md`](pipeline/board-automation.md) | Whoever moves cards, by hand or by PR. How a card moves when a draft PR opens, is approved, or merges, and what happens when a person drags one. |
+| [`pipeline/stage-checklists.md`](pipeline/stage-checklists.md) | Editors. The checklist posted on an issue when its card enters each column. Edit it here; no code change needed. |
 | [`TRANSFER.md`](TRANSFER.md) | Record of the move to the LMCache org (done). What GitHub carried over, what it did not (the board), the steps, and two open decisions. |
 
 ## Summary
@@ -43,7 +45,7 @@ heading without changing the parse contract table. See the checklist in
 |---|---|---|---|
 | `blog-post.md` | notes about a PR; someone else writes the post | Drafting | yes |
 | `blog-post-draft.md` | a written post whose technical content still needs checking | Editorial review or Technical review | yes |
-| `blog-post-complete.md` | a written post that is already technically sound | Editorial review | no, goes to Translations |
+| `blog-post-complete.md` | a written post that is already technically sound | Editorial review | no, goes on to Copyedit |
 
 The last two templates both take a written post. The only difference is whether
 the technical content still needs checking. Most written submissions use the

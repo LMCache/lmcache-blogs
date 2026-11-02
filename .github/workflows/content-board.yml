@@ -1,12 +1,24 @@
 name: Content board
 
-# Keeps the content board in step with the issues.
-#
-# Three jobs, each closing a different way for work to get lost:
-#   route         -- an issue arrives or changes, so put its card in the right column
-#   sweep         -- catch anything the events missed, on a schedule
+# Keeps the content board in step with the work. Four jobs:
+#   route         -- an issue arrives or changes: place it if it is new, finish a
+#                    closed translation, restore a reopened post
+#   pr            -- a draft PR opens, is approved by a maintainer, or merges:
+#                    move its post's card
+#   reconcile     -- every 15 minutes: act on cards a person moved, catch up on
+#                    approvals and merges the event jobs missed, place stragglers
 #   ensure-labels -- the intake templates only apply labels that already exist,
 #                    so create any the templates declare but the repo lacks
+#
+# Why a schedule at all: a repository workflow cannot trigger on a card move.
+# `projects_v2_item` is an org-only webhook. The reconciler is how manual moves
+# are seen, so they are acted on within about 15 minutes, not instantly.
+#
+# Why pull_request_target: draft PRs come from forks, and a fork's
+# `pull_request` run gets no secrets. pull_request_target runs this repo's own
+# code from main with secrets. It never checks out or runs the PR's code; it
+# reads the PR's metadata through the API and nothing else. Reviews have no
+# _target variant, so a review on a fork PR is picked up by the reconciler.
 #
 # Board writes need a CLASSIC token with `project` scope, in a PROJECT_TOKEN
 # secret. Two things make that necessary rather than a preference:
@@ -16,17 +28,20 @@ name: Content board
 
 on:
   issues:
-    types: [opened, reopened, labeled, unlabeled, edited]
+    types: [opened, reopened, closed, labeled, unlabeled, edited]
+  pull_request_target:
+    types: [opened, reopened, edited, ready_for_review, closed]
+  pull_request_review:
+    types: [submitted]
   schedule:
-    # Hourly. The event trigger does the real work; this is the safety net, and
-    # an hour is a tolerable worst case for a card being late to the board.
-    - cron: '17 * * * *'
+    - cron: '*/15 * * * *'
   push:
     branches: [main]
     paths:
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/workflows/content-board.yml'
-      - 'tools/board_router.py'
+      - 'tools/board_*.py'
+      - 'docs/pipeline/stage-checklists.md'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -37,12 +52,16 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 concurrency:
-  # Serialize per issue so two rapid label edits cannot race to set the column.
+  # Serialize per issue or PR, so two rapid edits cannot race to set a column.
   # Scheduled and dispatch runs share one slot. Never cancel in progress: a
-  # half-applied routing decision is worse than a slow one.
-  group: content-board-${{ github.event.issue.number || 'sweep' }}
+  # half-applied move is worse than a slow one. A run that is queued behind
+  # another and then dropped is not lost; the next reconcile catches it up.
+  group: >-
+    content-board-${{ github.event.issue.number ||
+    github.event.pull_request.number || 'reconcile' }}
   cancel-in-progress: false
 
 jobs:
@@ -100,43 +119,83 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Route the issue
+      - name: Place, finish, or restore the issue's card
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
           # Defaults to this repository's owner, so a transfer needs no edit.
           BOARD_OWNER: ${{ vars.BOARD_OWNER }}
           BOARD_NUMBER: ${{ vars.BOARD_NUMBER }}
+          NUMBER: ${{ github.event.issue.number }}
+          ACTION: ${{ github.event.action }}
         run: |
-          python tools/board_router.py route \
-            --repo "${{ github.repository }}" \
-            --issue "${{ github.event.issue.number }}" \
+          python tools/board_automation.py issue \
+            --repo "$GITHUB_REPOSITORY" --number "$NUMBER" --action "$ACTION" \
             | tee -a "$GITHUB_STEP_SUMMARY"
 
-  sweep:
+  pr:
     needs: preflight
+    # Reviews on a fork's PR run without secrets, so only same-repo reviews are
+    # handled here. The reconciler handles the rest.
     if: >-
-      needs.preflight.outputs.has_token == 'true' &&
-      github.event_name != 'issues'
+      needs.preflight.outputs.has_token == 'true' && (
+        github.event_name == 'pull_request_target' || (
+          github.event_name == 'pull_request_review' &&
+          github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-latest
     steps:
+      # Always this repository's default branch: never the PR's own code.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Sweep every open issue onto the board
+      - name: Move the post's card
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
           BOARD_OWNER: ${{ vars.BOARD_OWNER }}
           BOARD_NUMBER: ${{ vars.BOARD_NUMBER }}
+          NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          python tools/board_router.py sweep \
-            --repo "${{ github.repository }}" \
-            ${{ inputs.dry_run && '--dry-run' || '' }} \
+          python tools/board_automation.py pr \
+            --repo "$GITHUB_REPOSITORY" --number "$NUMBER" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+  reconcile:
+    needs: preflight
+    if: >-
+      needs.preflight.outputs.has_token == 'true' && (
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Place stragglers, then act on moves, approvals, and merges
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          BOARD_OWNER: ${{ vars.BOARD_OWNER }}
+          BOARD_NUMBER: ${{ vars.BOARD_NUMBER }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          python tools/board_router.py sweep --repo "$GITHUB_REPOSITORY" $DRY_RUN \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          python tools/board_automation.py reconcile \
+            --repo "$GITHUB_REPOSITORY" $DRY_RUN \
             | tee -a "$GITHUB_STEP_SUMMARY"
 
   # GitHub silently drops an issue-template label that does not exist in the
@@ -144,7 +203,10 @@ jobs:
   # failure with no error message anywhere. This job makes the templates
   # self-healing: whatever they declare, the repo gets.
   ensure-labels:
-    if: github.event_name != 'issues'
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

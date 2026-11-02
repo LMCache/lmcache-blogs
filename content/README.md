@@ -47,13 +47,24 @@ To submit:
 2. Add `content/drafts/<slug>/post.md` and its `images/`.
 3. Commit with a sign-off and no AI co-author line:
    `git commit -s -m "[Doc] Draft: <title>"`
-4. Open the PR against `main`. Open the board issue with the matching template
-   (path D or E) and link the PR from it. Put `Refs #<issue>` in the PR body.
+4. Open the board issue with the matching template (path D or E). Then open
+   the PR against `main`, with this line in its description, using the issue's
+   number:
+
+   ```
+   Post: #<issue>
+   ```
+
+   The board follows the PR through that line. Do not use `Fixes #<issue>`:
+   it would close the post's issue when the PR merges.
 5. Post the PR link in `#lmcache-content`.
 
 Editors review with suggested changes. Accept them with **Commit suggestion**,
-or reply on the line. The PR stays open until the post is published. The issue
-remains the tracking record.
+or reply on the line. Each review stage ends with a maintainer's approval, and
+each approval moves the post's card to its next stage. The PR stays open until
+the post is published; merging it moves the card to Published. The issue
+remains the tracking record. How the card moves is in
+[`../docs/pipeline/board-automation.md`](../docs/pipeline/board-automation.md).
 
 ## Not here yet
 

@@ -32,6 +32,7 @@ from board_router import (  # noqa: E402
     COLUMN_EDITORIAL,
     COLUMN_IDEA,
     COLUMN_TECHNICAL,
+    COLUMN_TRANSLATIONS,
     TEMPLATE_LABELS,
     Decision,
     board_location,
@@ -39,7 +40,7 @@ from board_router import (  # noqa: E402
     route,
 )
 
-ALL_LABELS = (*TEMPLATE_LABELS, "blog", "pipeline", "bug", "documentation")
+ALL_LABELS = (*TEMPLATE_LABELS, "blog", "l10n", "pipeline", "bug", "documentation")
 
 
 def decide(*labels: str, entry_lane: str | None = None) -> Decision:
@@ -137,11 +138,21 @@ class TestAmbiguousAndUnclassified:
     def test_all_three_intake_labels_are_triaged(self) -> None:
         assert decide("blog", *TEMPLATE_LABELS).needs_triage
 
-    def test_blog_without_intake_label_is_triaged_not_dropped(self) -> None:
-        """A hand-made blog issue still gets a card, plus a flag."""
+    def test_bare_blog_label_goes_to_idea_without_triage(self) -> None:
+        """Hand-filed posts carry only `blog`; that is normal, not unknown."""
         result = decide("blog")
         assert result.column == COLUMN_IDEA
-        assert result.needs_triage
+        assert not result.needs_triage
+
+    def test_translation_goes_to_translations(self) -> None:
+        result = decide("blog", "l10n")
+        assert result.column == COLUMN_TRANSLATIONS
+        assert not result.needs_triage
+
+    def test_translation_label_wins_over_intake_labels(self) -> None:
+        """A translation copies its post's labels; it is still a translation."""
+        result = decide("blog", "l10n", "tech-verified")
+        assert result.column == COLUMN_TRANSLATIONS
 
     def test_pipeline_stays_off_board_without_triage(self) -> None:
         """Pipeline work is classified, just not editorial. Not a dead end."""
@@ -194,7 +205,13 @@ class TestTotality:
         The seven live columns are asserted against in the workflow itself;
         here we pin the four this router can ever produce.
         """
-        allowed = {COLUMN_IDEA, COLUMN_DRAFTING, COLUMN_EDITORIAL, COLUMN_TECHNICAL}
+        allowed = {
+            COLUMN_IDEA,
+            COLUMN_DRAFTING,
+            COLUMN_EDITORIAL,
+            COLUMN_TECHNICAL,
+            COLUMN_TRANSLATIONS,
+        }
         for combo in itertools.combinations(ALL_LABELS, size):
             column = route(frozenset(combo), None).column
             assert column is None or column in allowed

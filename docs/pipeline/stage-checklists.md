@@ -38,15 +38,17 @@ the issue.
 - [ ] Every number carries its conditions (hardware, model, batch size,
       workload shape) in the same sentence or the next one.
 - [ ] No capability is claimed that the diff does not show.
-- [ ] Code is shown as written, with its file path, and was not "improved".
+- [ ] Code is shown exactly as it is in the source, with its file path. Nobody
+      edited it for the post.
 - [ ] Approve the draft PR when this stage is done. The approval moves the card.
 
 ## Copyedit
 
-- [ ] Spelling, grammar, and consistency. Write "KV cache", lowercase, no
-      hyphen unless grammar needs one.
-- [ ] Remove phrases that read as machine-written: "leverage", "seamlessly",
-      "delve", and runs of short sentences at the same cadence.
+- [ ] Spelling, grammar, and consistency are correct. Write "KV cache" with
+      "cache" in lowercase, and with no hyphen unless grammar requires one.
+- [ ] Remove phrases that read as machine-written, such as "leverage",
+      "seamlessly", and "delve", and several short sentences in a row with the
+      same rhythm.
 - [ ] Every image has alt text and its source is credited.
 - [ ] If the author asked for a light copyedit, keep to that.
 - [ ] Approve the draft PR when this stage is done. The approval moves the card.
@@ -57,7 +59,7 @@ the issue.
       `l10n`. Each one gets its own card here.
 - [ ] Leave product names, flags, config keys, and API names in English unless
       the author asked otherwise.
-- [ ] Record idiomatic changes the translator makes; they feed back into the
-      prompts.
+- [ ] Record each change that the translator makes for idioms. We use these
+      records to improve the prompts.
 - [ ] This card moves to Published when the draft PR merges and every
       translation sub-issue is closed.

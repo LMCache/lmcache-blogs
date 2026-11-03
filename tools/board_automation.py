@@ -735,10 +735,10 @@ def handle_pr(repo: str, number: int, dry_run: bool) -> None:
                         repo,
                         "--body",
                         f"{MISSING_REF_MARKER}\nThis PR adds a draft under "
-                        "`content/drafts/`, but it does not say which post it "
-                        "belongs to, so the content board cannot follow it. Add "
-                        "a line `Post: #<issue>` to the description, using the "
-                        "post's issue number.",
+                        "`content/drafts/`, but it does not name its post, so "
+                        "the content board cannot connect it to a card. Add "
+                        "this line to the description, with the post's issue "
+                        "number: `Post: #<issue>`",
                     ]
                 )
         return
@@ -761,8 +761,9 @@ def handle_pr(repo: str, number: int, dry_run: bool) -> None:
                     repo,
                     "--body",
                     f"{NOT_A_POST_MARKER}\nThis PR names #{ref.number} as its "
-                    "post, but that is not a blog post issue, so the content "
-                    "board cannot follow it. Point `Post:` at the post's issue.",
+                    "post, but that issue is not a blog post, so the content "
+                    "board cannot connect this PR to a card. Change the "
+                    "`Post:` line to the number of the post's issue.",
                 ]
             )
         return

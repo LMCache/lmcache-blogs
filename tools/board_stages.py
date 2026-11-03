@@ -435,15 +435,15 @@ def describe_flags(route: Route, from_col: str, to_col: str) -> tuple[str, ...]:
     if _index(to_col) < _index(from_col):
         flags.append(
             f"This card moved back from **{from_col}** to **{to_col}**. "
-            "If that was to send it for rework, say what needs to change."
+            "If the post needs more work, comment here with what must change."
         )
     skipped = skipped_gates(route, from_col, to_col)
     if skipped:
         names = ", ".join(f"**{g}**" for g in skipped)
         flags.append(
             f"This card moved from **{from_col}** to **{to_col}** and skipped "
-            f"{names}, which this post's route requires. If that stage happened "
-            "somewhere else, say where."
+            f"{names}, which this post requires. If that review happened "
+            "somewhere else, comment here with where it happened."
         )
     return tuple(flags)
 

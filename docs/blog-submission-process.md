@@ -140,7 +140,7 @@ Your card mostly moves on its own. When you open your draft PR, the card goes to
 Editorial review. Each time a maintainer approves the PR, it moves to the next
 stage, and when the PR merges, it goes to Published. Each time it enters a stage,
 the issue gets a short checklist for that stage. Editors can also move a card by
-hand, and the automation follows along. The details are in
+hand, and the automation accepts the move. The details are in
 [`pipeline/board-automation.md`](pipeline/board-automation.md).
 
 You get a Slack DM when your card moves or needs you. If a card waits on you

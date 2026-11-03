@@ -241,7 +241,7 @@ is published with errors.
   a silent fall-through. Never let the router guess a review lane, because a
   wrong guess skips review on a post that is about to be published.
 - Never revert a person's move on the board. The column is the source of
-  truth: the reconciler follows a manual move and may flag it with a comment, but
+  truth: the reconciler accepts a manual move and may flag it with a comment, but
   it never moves the card back. Keep stage decisions in `tools/board_stages.py`,
   which makes no network calls, and test every new transition in
   `tests/test_board_stages.py`. The reconciler's first sight of a card must stay

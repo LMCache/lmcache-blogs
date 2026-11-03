@@ -152,10 +152,10 @@ declare and creates any that are missing.
 
 ## What this does not do
 
-- The router only places issues that are not on the board yet. Once a card
-  exists, an edit or a label change leaves it where it is: its column belongs to
-  whoever moved it last. Everything after placement is
-  [`board-automation.md`](board-automation.md).
+- The router places only issues that are not on the board yet. After a card
+  exists, an edit or a label change does not move it. The card stays in the
+  column where a person or the automation last put it. Everything after
+  placement is in [`board-automation.md`](board-automation.md).
 - The sweep reads at most 200 open issues. It pages through every board item,
   and it counts only this repository's issues as placed, so an issue from
   another repository with the same number does not hide one of ours.

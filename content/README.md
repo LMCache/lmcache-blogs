@@ -56,7 +56,8 @@ To submit:
    Post: #<issue>
    ```
 
-   The board follows the PR through that line. Do not use `Fixes #<issue>`:
+   The board uses that line to connect the PR to the post's card. Do not use
+   `Fixes #<issue>`:
    it would close the post's issue when the PR merges.
 5. Post the PR link in `#lmcache-content`.
 

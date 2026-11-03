@@ -17,8 +17,8 @@ transition below is covered by `tests/test_board_stages.py`.
 - **One PR per post.** A written post arrives as a PR under
   `content/drafts/<slug>/`, and the review stages happen as reviews on that PR.
 - **The PR names its post** with a `Post: #N` line in its description.
-- **People can move any card at any time.** The automation notices within
-  about 15 minutes and follows along.
+- **People can move any card at any time.** The automation finds the move
+  within about 15 minutes and accepts it.
 
 ## How a card moves on its own
 
@@ -40,8 +40,8 @@ transition below is covered by `tests/test_board_stages.py`.
 | `tech-verified` | Editorial review, Copyedit |
 | anything else (`skeleton`, `needs-tech-review`, or only `blog`) | Editorial review, Technical review, Copyedit |
 
-A post whose intake labels conflict takes the full route. When the path is
-unclear, it asks for more review, not less.
+A post whose intake labels conflict takes the full route. When the route is
+unclear, the automation chooses more review, not less.
 
 ### What counts as an approval
 
@@ -53,10 +53,10 @@ An approving review counts only if all of these hold:
 - The reviewer is not the PR's author.
 - It was submitted **after the card last changed column.**
 
-The last rule is what makes each stage need its own sign-off. One approval
-moves the card one stage, and after that the card's change time is later than
-the approval, so the same approval never counts twice. An approval given while
-the card sat in Drafting, before review began, does not count either.
+Because of the last rule, each stage needs its own approval. One approval moves
+the card one stage. After the move, the card's change time is later than the
+approval, so the same approval never counts twice. An approval given while the
+card was in Drafting, before review began, does not count either.
 
 "Request changes" and comments move nothing. The card stays in the stage being
 reviewed until someone approves.
@@ -65,12 +65,12 @@ reviewed until someone approves.
 
 The draft PR stays open until the post is published, as
 [`content/README.md`](../../content/README.md#drafts) says. So a merge means
-the English post is out, and the card goes to Published. If translations are
-still being written, the card waits in Translations, and moves to Published
-when the last one closes.
+that the English post is published, and the card goes to Published. If
+translations are still in progress, the card waits in Translations. It moves to
+Published when the last translation closes.
 
-A post with no translations at all is never moved to Published by the
-translation rule. Its merge publishes it.
+For a post with no translations, the merge is what moves the card to
+Published. The translation rule never applies to it.
 
 ## Naming the post in a PR
 
@@ -80,10 +80,10 @@ Put this line in the PR description:
 Post: #36
 ```
 
-The full URL of the post's issue in this repository works too. Before `Post:`
-existed, authors were told to write `Refs #N`, so a description with exactly
-one `Refs #N` also counts. A description with several `Refs` and no `Post:`
-line is ambiguous and is ignored.
+The full URL of the post's issue in this repository also works. The drafts
+README used to tell authors to write `Refs #N`, so a description with exactly
+one `Refs #N` also counts. A description with several `Refs` lines and no
+`Post:` line is ambiguous, and the automation does not use it.
 
 Do **not** use `Fixes #N` or another closing keyword for the post. It would
 close the post's issue when the PR merges, possibly while translations are
@@ -91,14 +91,13 @@ still in progress.
 
 A PR that adds files under `content/drafts/` but names no post gets one comment
 asking for the line. A PR that names an issue that is not a blog post gets one
-comment saying so. Neither is ignored, and neither is commented on twice.
+comment saying so. The automation posts each of these comments once per PR.
 
 ## When a person moves a card
 
 GitHub cannot run a repository workflow when a card moves: that event is
 available only to an organization webhook. So a scheduled job, the
-**reconciler**, reads the whole board every 15 minutes and works out what
-changed.
+**reconciler**, reads the whole board every 15 minutes and finds what changed.
 
 It keeps two hidden text fields on each card:
 
@@ -115,8 +114,8 @@ reconciler then:
    [`stage-checklists.md`](stage-checklists.md). It posts once each time the
    card enters a column, not on every run.
 3. **Flags an odd move** with a comment, and **never reverts it**: a move
-   backwards, or a move that skips a review stage this post requires. The
-   comment asks the person to say why, which is often a perfectly good reason.
+   backwards, or a move that skips a review stage that this post requires. The
+   comment asks the person to explain the move. There is often a good reason.
 4. **Closes the issue** if the card reached Published, and records the column
    it came from.
 5. **Restores a reopened post.** If an issue is reopened while its card is in
@@ -126,16 +125,16 @@ reconciler then:
 Automation's own moves update Synced status at the same moment, so the
 reconciler never mistakes them for a person's.
 
-The reconciler also catches up on anything the event jobs missed: an approval
+The reconciler also handles anything that the event jobs missed: an approval
 on a PR from a fork (fork PRs get no secrets on review events), or an event
 that was dropped while another run held the queue.
 
 ### Turning it on is quiet
 
 The first time the reconciler sees a card, it records its column and syncs its
-stage label, and does nothing else. No checklist, no flag, no close. Turning the
-automation on does not bury every existing card in comments, and it does not
-close a card that was already in Published.
+stage label, and does nothing else: it posts no checklist or flag and closes
+nothing. So turning on the automation does not post a comment on every existing
+card, and it does not close a card that was already in Published.
 
 A card that predates the reconciler has no Prior status, so if its issue is
 open while it sits in Published, it is left alone rather than "restored".
@@ -148,8 +147,9 @@ router puts an `l10n` issue in Translations. A translation has no review stages
 of its own.
 
 Close a translation's issue when it is published, or move its card to
-Published, which closes it. Either way the post is checked: if its draft PR has
-merged and every translation is closed, the post moves to Published.
+Published, which closes it. In both cases, the automation then checks the post:
+if its draft PR has merged and every translation is closed, the post moves to
+Published.
 
 ## What you can change on the board without touching code
 
@@ -161,8 +161,8 @@ merged and every translation is closed, the post moves to Published.
 | Edit a stage checklist | Change [`stage-checklists.md`](stage-checklists.md). |
 | Add a column | Cards can be moved into it and get a stage label. It is not a review stage and gets no checklist until the checklist doc has a section for it. |
 
-These need a code change in `tools/board_stages.py`, and the tests will tell
-you what else depends on them:
+These need a code change in `tools/board_stages.py`. The tests show what else
+depends on them:
 
 | Change | Why |
 |---|---|
@@ -178,8 +178,9 @@ Once per board, create the hidden fields:
 python tools/board_automation.py setup --repo LMCache/lmcache-blogs
 ```
 
-It is safe to run again; existing fields are left alone. The workflow needs the
-same `PROJECT_TOKEN` secret and `BOARD_NUMBER` variable as the router; see
+You can run it again safely. It does not change fields that already exist. The
+workflow needs the same `PROJECT_TOKEN` secret and `BOARD_NUMBER` variable as
+the router; see
 [`board-routing.md`](board-routing.md#setup-one-required-secret).
 
 ## Running it locally
@@ -200,9 +201,11 @@ python tools/board_automation.py issue --repo LMCache/lmcache-blogs --number 36 
 
 ## What this does not do
 
-- **No stall reminders.** A card waiting on someone is not chased. That needs
-  Slack; see issue #6.
+- **No reminders.** The automation does not remind anyone about a card that is
+  waiting for them. Reminders need Slack; see issue #6.
 - **No policy for closing a post that was abandoned.** Closing a post's issue
   outside Published leaves its card where it is. See issue #7.
-- **Latency.** Event-driven moves happen within a minute or two. Manual moves are
-  seen within about 15 minutes, because they can only be seen by polling.
+- **No instant response to manual moves.** Moves caused by PR events happen
+  within one or two minutes. The automation finds manual moves within about 15
+  minutes, because it can find them only by reading the whole board on a
+  schedule.

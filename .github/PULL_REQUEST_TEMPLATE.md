@@ -3,7 +3,7 @@
 2. Base this PR on `main`. Sign off every commit with DCO (`git commit -s`). Do not add an AI co-author trailer to any commit or to this PR body. Maintainer commits carry two sign-offs; see AGENTS.md.
 3. Start the title with a type tag: [Doc], [Bugfix], [Core], [CI], [Build], [Test], [Misc], or docs:, fix:, feat:, ci:, chore:.
 4. To close an issue, add 'Fixes #<issue number>'. To link it without closing, add 'Refs #<issue number>'.
-   For a draft under content/drafts/, name its post instead with a line 'Post: #<issue number>', and do not use 'Fixes' for the post: the board follows the PR through that line.
+   For a draft under content/drafts/, name its post instead with a line 'Post: #<issue number>', and do not use 'Fixes' for the post. The board uses that line to connect the PR to the post's card.
 5. After you open this PR, post the link in #lmcache-content so that a reviewer finds it. -->
 
 **What this PR does / why we need it**:

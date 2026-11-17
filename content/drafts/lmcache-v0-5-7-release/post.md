@@ -1,8 +1,9 @@
-# LMCache v0.5.7: Safer Defaults, New Accelerators, and Native gRPC
+# LMCache v0.5.7.post1: Safer Defaults, New Accelerators, and Native gRPC
 
 By LMCache Team
 
-The LMCache contributor team and community are pleased to announce LMCache v0.5.7, released on November 5, 2026.
+The LMCache contributor team and community are pleased to announce LMCache v0.5.7.post1, released on November 12, 2026.
+This release has the same features as v0.5.7, with packages built against PyTorch 2.14.0.
 It includes safer defaults for deployments, optional API key authentication, support for more accelerators, and new multiprocess (MP) transport modes.
 
 If you run the official Docker images, read the upgrade notes before you upgrade.
@@ -23,7 +24,7 @@ If you mount a host directory there, UID 1000 must be able to read and write it.
 
 ## Optional API key authentication
 
-LMCache v0.5.7 adds API key authentication to the MP HTTP server ([#5756](https://github.com/LMCache/LMCache/pull/5756)) and to the frontend HTTP API ([#5767](https://github.com/LMCache/LMCache/pull/5767)).
+This release adds API key authentication to the MP HTTP server ([#5756](https://github.com/LMCache/LMCache/pull/5756)) and to the frontend HTTP API ([#5767](https://github.com/LMCache/LMCache/pull/5767)).
 Both use one shared verifier and one set of configuration options ([#5779](https://github.com/LMCache/LMCache/pull/5779)).
 
 Authentication is off until you configure a key.
@@ -52,10 +53,11 @@ If requests cross a network you do not trust, put Transport Layer Security (TLS)
 This release adds authentication to HTTP services.
 It does not add authentication to the MP request transports, ZeroMQ (ZMQ) and gRPC.
 Keep the transport port on a private network or on the local host.
+API key authentication for the ZMQ and gRPC transports is in v0.5.8rc1 (see "Coming in v0.5.8" below).
 
 ## Upgrade notes for operators
 
-Check these before you move to v0.5.7:
+Check these before you upgrade:
 
 - Your container can write to every path LMCache uses as UID 1000.
 - Host directories that you mount, such as a shared Hugging Face cache, are readable and writable by UID 1000.
@@ -114,16 +116,25 @@ vLLM pods connect over the node's loopback interface, so the transport port is n
 Install or upgrade from the Python Package Index (PyPI):
 
 ```
-pip install -U lmcache
+pip install --upgrade lmcache==0.5.7.post1
 ```
 
-The official vLLM image is published on Docker Hub:
+The PyPI packages are built against PyTorch 2.14.0, to match the vLLM runtime ([#6465](https://github.com/LMCache/LMCache/pull/6465)).
+If you installed v0.5.7 from an earlier build, upgrade to v0.5.7.post1.
+
+These images are on Docker Hub, for both amd64 and arm64:
 
 ```
-docker pull lmcache/vllm-openai:v0.5.7
+docker pull lmcache/vllm-openai:v0.5.7.post1
+docker pull lmcache/vllm-openai:v0.5.7.post1-lightweight
+docker pull lmcache/standalone:v0.5.7.post1
+docker pull lmcache/lmcache-payload:v0.5.7.post1
 ```
 
-RBLN wheels are published on the [GitHub release page](https://github.com/LMCache/LMCache/releases/tag/v0.5.7) ([#6140](https://github.com/LMCache/LMCache/pull/6140)).
+This release no longer provides CUDA 12.9 (cu129) wheels or images ([#6533](https://github.com/LMCache/LMCache/pull/6533)).
+It also does not include an SGLang image, because SGLang compatibility with PyTorch 2.14 is not yet validated.
+
+RBLN wheels are published on their own [GitHub release page](https://github.com/LMCache/LMCache/releases/tag/v0.5.7.post1-rbln) ([#6140](https://github.com/LMCache/LMCache/pull/6140)).
 
 ## Other changes
 
@@ -134,13 +145,17 @@ RBLN wheels are published on the [GitHub release page](https://github.com/LMCach
 - Retryable peer-to-peer (P2P) adapter teardown ([#6208](https://github.com/LMCache/LMCache/pull/6208)).
 - In-process components moved under legacy namespaces, and in-process guides moved to the legacy docs ([#5923](https://github.com/LMCache/LMCache/pull/5923)).
 
-The [full release notes](https://github.com/LMCache/LMCache/releases/tag/v0.5.7) list every change.
+The [v0.5.7 release notes](https://github.com/LMCache/LMCache/releases/tag/v0.5.7) list every change, and the [v0.5.7.post1 release notes](https://github.com/LMCache/LMCache/releases/tag/v0.5.7.post1) describe the rebuild.
 
 ## Coming in v0.5.8
 
-These changes were merged to the dev branch after the v0.5.7 tag was created (tag commit 236f3ee).
-They are in nightly builds now, and they are planned for v0.5.8.
-They are not in v0.5.7.
+These changes are in v0.5.8rc1, the first release candidate for v0.5.8, and they are planned for v0.5.8.
+They are not in v0.5.7.post1.
+You can test v0.5.8rc1 from PyPI with `pip install --pre lmcache`.
+
+Security:
+
+- API key authentication for the ZMQ request transport ([#5769](https://github.com/LMCache/LMCache/pull/5769)), and for the sync, aio, and native gRPC servers ([#5770](https://github.com/LMCache/LMCache/pull/5770), [#6439](https://github.com/LMCache/LMCache/pull/6439))
 
 Features and integrations:
 

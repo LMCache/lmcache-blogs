@@ -51,15 +51,29 @@ the issue.
       same rhythm.
 - [ ] Every image has alt text and its source is credited.
 - [ ] If the author asked for a light copyedit, keep to that.
-- [ ] Approve the draft PR when this stage is done. The approval moves the card.
+- [ ] Approve the draft PR when this stage is done. The approval moves the card
+      to Ready to publish.
 
 ## Translations
 
-- [ ] Open one sub-issue of this post for each target language, labelled
-      `l10n`. Each one gets its own card here.
+This column holds translation cards only. A post does not wait here.
+
+- [ ] Assign yourself.
 - [ ] Leave product names, flags, config keys, and API names in English unless
-      the author asked otherwise.
-- [ ] Record each change that the translator makes for idioms. We use these
+      the author asked for something else.
+- [ ] In a comment, record each change you make for an idiom. We use these
       records to improve the prompts.
-- [ ] This card moves to Published when the draft PR merges and every
-      translation sub-issue is closed.
+- [ ] When the translation is finished, move this card to Ready to publish.
+
+## Ready to publish
+
+The post or translation is finished and waits for its publish date.
+
+- [ ] Set the Publish date field on this card.
+- [ ] For a post: open one sub-issue of this issue for each target language.
+      Title it `[l10n:<code>] <post title>`, for example `[l10n:zh]`, and add
+      the labels `l10n` and `lang:<code>`. Each sub-issue gets its own card in
+      Translations. If a language is already finished, put its card directly
+      in Ready to publish.
+- [ ] For a translation: after you publish it, link it to the original post
+      in WordPress (Languages box, Translations field), then close this issue.

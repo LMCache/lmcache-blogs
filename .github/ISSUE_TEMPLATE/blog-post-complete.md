@@ -20,8 +20,8 @@ Use a different template if:
   - you have notes or a PR and want someone else to write the post
     -> "Blog post from a PR"
 
-Your card goes to Editorial review for the copyedit, then to Translations.
-It does not go through Technical review.
+Your card goes to Editorial review for the copyedit, then to Ready to
+publish. It does not go through Technical review.
 
 Most sections need one line. Only "Who verified the technical content"
 needs thought.
@@ -104,7 +104,7 @@ If the post has no images but needs one, say what it should show. -->
 
 ## Translation notes
 
-<!-- Optional. The post goes to Translations after the copyedit.
+<!-- Optional. After the copyedit, each language gets its own card.
 
 List anything that must stay in English: product names, flags, config
 keys, API names, terms. Name any languages you want, or a colleague who

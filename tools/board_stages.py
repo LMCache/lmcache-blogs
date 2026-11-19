@@ -28,6 +28,7 @@ EDITORIAL = "Editorial review"
 TECHNICAL = "Technical review"
 COPYEDIT = "Copyedit"
 TRANSLATIONS = "Translations"
+READY = "Ready to publish"
 PUBLISHED = "Published"
 
 COLUMNS = (
@@ -38,6 +39,7 @@ COLUMNS = (
     TECHNICAL,
     COPYEDIT,
     TRANSLATIONS,
+    READY,
     PUBLISHED,
 )
 
@@ -55,14 +57,6 @@ class Route(Enum):
     FULL = "full"
     VERIFIED = "verified"
     TRANSLATION = "translation"
-
-
-class PrState(Enum):
-    """State of the draft PR that belongs to a post."""
-
-    NONE = "none"
-    OPEN = "open"
-    MERGED = "merged"
 
 
 _GATES = {
@@ -132,7 +126,7 @@ def after_approval(route: Route, column: str | None) -> str | None:
     """Return where a maintainer's approval moves a card, if anywhere.
 
     An approval completes the review stage the card is in, so the card goes to
-    the next review stage its route requires, or to Translations after the
+    the next review stage its route requires, or to Ready to publish after the
     last one. A card outside the review columns is not moved: an approval on a
     PR whose card sits in Drafting is not a stage sign-off.
 
@@ -149,7 +143,7 @@ def after_approval(route: Route, column: str | None) -> str | None:
     for gate in required_gates(route):
         if _index(gate) > here:
             return gate
-    return TRANSLATIONS
+    return READY
 
 
 def approval_counts(
@@ -208,50 +202,22 @@ def on_pr_opened(column: str | None) -> str | None:
     return None
 
 
-def on_merge(column: str | None, *, open_translations: int) -> str | None:
+def on_merge(column: str | None) -> str | None:
     """Return where merging the draft PR moves the post's card, if anywhere.
 
     The draft PR stays open until the post is published, so a merge means the
-    English post is out. If any translation is still open, the card waits in
-    Translations until the last one closes.
+    post is out in its original language. The card goes to Published.
+    Translations are separate cards and never delay the post.
 
     Args:
         column: The card's current column.
-        open_translations: How many translation sub-issues are still open.
 
     Returns:
         The target column, or None.
     """
-    target = TRANSLATIONS if open_translations else PUBLISHED
-    if _index(column) >= _index(target):
+    if _index(column) >= _index(PUBLISHED):
         return None
-    return target
-
-
-def parent_should_publish(
-    column: str | None, open_translations: int, total_translations: int, pr: PrState
-) -> bool:
-    """Decide whether a post moves to Published because translation finished.
-
-    Only a post waiting in Translations, with at least one translation and none
-    still open, and whose draft PR is not still open. A post with no
-    translations at all is published by a human, not by this rule.
-
-    Args:
-        column: The post's current column.
-        open_translations: Translation sub-issues still open.
-        total_translations: All translation sub-issues.
-        pr: The state of the post's draft PR.
-
-    Returns:
-        True if the post should move to Published.
-    """
-    return (
-        column == TRANSLATIONS
-        and total_translations > 0
-        and open_translations == 0
-        and pr is not PrState.OPEN
-    )
+    return PUBLISHED
 
 
 def skipped_gates(route: Route, from_col: str, to_col: str) -> tuple[str, ...]:
@@ -390,7 +356,6 @@ class CardPlan:
         checklist: Post this column's checklist, or None.
         flags: Sentences describing an odd move, each posted as a comment.
         close: Whether to close the issue.
-        check_parent: Whether to re-check the parent post's translations.
     """
 
     set_synced: str | None = None
@@ -401,7 +366,6 @@ class CardPlan:
     checklist: str | None = None
     flags: tuple[str, ...] = ()
     close: bool = False
-    check_parent: bool = False
 
     def is_empty(self) -> bool:
         """Return whether the plan does nothing."""
@@ -496,5 +460,4 @@ def reconcile_card(card: CardSnapshot) -> CardPlan:
         checklist=card.status,
         flags=describe_flags(route, card.synced, card.status),
         close=publishing and card.is_open,
-        check_parent=publishing and route is Route.TRANSLATION,
     )

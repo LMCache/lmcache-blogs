@@ -73,7 +73,8 @@ The post or translation is finished and waits for its publish date.
 - [ ] For a post: open one sub-issue of this issue for each target language.
       Title it `[l10n:<code>] <post title>`, for example `[l10n:zh]`, and add
       the labels `l10n` and `lang:<code>`. Each sub-issue gets its own card in
-      Translations. If a language is already finished, put its card directly
-      in Ready to publish.
+      Translations. Move each new card to the top of the column, so that the
+      newest posts are translated first. If a language is already finished,
+      put its card directly in Ready to publish.
 - [ ] For a translation: after you publish it, link it to the original post
       in WordPress (Languages box, Translations field), then close this issue.

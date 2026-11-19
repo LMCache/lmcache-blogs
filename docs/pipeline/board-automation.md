@@ -143,6 +143,9 @@ and `lang:<code>`. The editor opens these sub-issues when the post reaches
 Ready to publish. The board adds sub-issues automatically, and the router
 puts an `l10n` issue in Translations. A translation has no review stages.
 
+The Translations column is ordered newest post first, so that recent posts
+are translated first. A new card arrives at the bottom: move it to the top.
+
 A translation card moves Translations → Ready to publish → Published. Close
 its issue when the translation is published, or move its card to Published,
 which closes it. Before you close it, link the translation to the original

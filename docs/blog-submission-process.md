@@ -110,7 +110,7 @@ correct.
 4. Choose the editing level: `full` (we can change structure and phrasing,
    within house style) or `light` (grammar, typos, and consistency only).
 5. Submit. The card goes to **Editorial review** for the copyedit, then to
-   **Translations**. **It does not go through Technical review.**
+   **Ready to publish**. **It does not go through Technical review.**
 
 Every number in the post must still state its test conditions. The copyedit
 checks this.
@@ -126,11 +126,19 @@ fields.
 ## What happens to your card
 
 ```
-Idea → Claimed → Drafting → Editorial review → Technical review → Copyedit → Translations → Published
+Idea → Claimed → Drafting → Editorial review → Technical review → Copyedit → Ready to publish → Published
                     ↑              ↑    ↑              ↑
                 Paths A/B/C   Path D    Path E     Path D
                               (editorial)          (technical)
 ```
+
+**Ready to publish** means the post is finished and waits for its publish
+date. The editor sets the date in the card's **Publish date** field.
+
+Translations do not delay your post. Each target language gets its own
+card, a sub-issue of your post, which moves Translations → Ready to publish →
+Published. Your post can publish before, after, or on the same day as its
+translations.
 
 Path D always goes through **Technical review**. Path E skips it. No path
 enters at **Idea** or **Claimed**: those columns hold proposed posts and posts
@@ -138,9 +146,10 @@ that someone has taken, before anyone writes.
 
 Your card mostly moves on its own. When you open your draft PR, the card goes to
 Editorial review. Each time a maintainer approves the PR, it moves to the next
-stage, and when the PR merges, it goes to Published. Each time it enters a stage,
-the issue gets a short checklist for that stage. Editors can also move a card by
-hand, and the automation accepts the move. The details are in
+stage. After Copyedit it waits in Ready to publish, and when the PR merges, it
+goes to Published. Each time it enters a stage, the issue gets a short
+checklist for that stage. Editors can also move a card by hand, and the
+automation accepts the move. The details are in
 [`pipeline/board-automation.md`](pipeline/board-automation.md).
 
 You get a Slack DM when your card moves or needs you. If a card waits on you

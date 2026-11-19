@@ -282,8 +282,9 @@ exception.
 
 ### Routing
 
-Path E always enters **Editorial review**, then moves to **Translations**. It
-has no `entry_lane`, because copyedit is the only stage it needs.
+Path E always enters **Editorial review**, then moves to **Ready to
+publish**. It has no `entry_lane`, because copyedit is the only stage it
+needs.
 
 Path E never passes through Technical review. If a path E card is in
 Technical review, the author picked the wrong template or something re-routed

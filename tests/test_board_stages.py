@@ -27,16 +27,15 @@ from board_stages import (  # noqa: E402
     EDITORIAL,
     IDEA,
     PUBLISHED,
+    READY,
     TECHNICAL,
     TRANSLATIONS,
     CardSnapshot,
-    PrState,
     Route,
     after_approval,
     approval_counts,
     on_merge,
     on_pr_opened,
-    parent_should_publish,
     parse_checklists,
     parse_post_ref,
     reconcile_card,
@@ -115,7 +114,7 @@ class TestApproval:
 
     @pytest.mark.parametrize(
         ("column", "expected"),
-        [(EDITORIAL, TECHNICAL), (TECHNICAL, COPYEDIT), (COPYEDIT, TRANSLATIONS)],
+        [(EDITORIAL, TECHNICAL), (TECHNICAL, COPYEDIT), (COPYEDIT, READY)],
     )
     def test_full_route_advances_one_gate(self, column: str, expected: str) -> None:
         assert after_approval(Route.FULL, column) == expected
@@ -123,11 +122,15 @@ class TestApproval:
     def test_verified_route_jumps_past_technical(self) -> None:
         assert after_approval(Route.VERIFIED, EDITORIAL) == COPYEDIT
 
+    def test_last_review_goes_to_ready_not_translations(self) -> None:
+        """A post never waits for its translations."""
+        assert after_approval(Route.VERIFIED, COPYEDIT) == READY
+
     def test_verified_card_dragged_into_technical_still_advances(self) -> None:
         """A human may send a verified post to Technical review anyway."""
         assert after_approval(Route.VERIFIED, TECHNICAL) == COPYEDIT
 
-    @pytest.mark.parametrize("column", [IDEA, DRAFTING, TRANSLATIONS, PUBLISHED])
+    @pytest.mark.parametrize("column", [IDEA, DRAFTING, TRANSLATIONS, READY, PUBLISHED])
     def test_outside_a_review_column_an_approval_moves_nothing(
         self, column: str
     ) -> None:
@@ -212,7 +215,7 @@ class TestPrOpenedAndMerged:
         assert on_pr_opened(column) == EDITORIAL
 
     @pytest.mark.parametrize(
-        "column", [EDITORIAL, TECHNICAL, COPYEDIT, TRANSLATIONS, PUBLISHED]
+        "column", [EDITORIAL, TECHNICAL, COPYEDIT, TRANSLATIONS, READY, PUBLISHED]
     )
     def test_opening_never_moves_a_card_backwards(self, column: str) -> None:
         assert on_pr_opened(column) is None
@@ -220,18 +223,12 @@ class TestPrOpenedAndMerged:
     def test_card_with_no_column_starts_editorial_review(self) -> None:
         assert on_pr_opened(None) == EDITORIAL
 
-    def test_merge_publishes_when_no_translation_is_open(self) -> None:
-        assert on_merge(COPYEDIT, open_translations=0) == PUBLISHED
-        assert on_merge(TRANSLATIONS, open_translations=0) == PUBLISHED
-
-    def test_merge_waits_in_translations_while_any_is_open(self) -> None:
-        assert on_merge(COPYEDIT, open_translations=2) == TRANSLATIONS
-
-    def test_merge_does_not_move_a_waiting_card(self) -> None:
-        assert on_merge(TRANSLATIONS, open_translations=1) is None
+    @pytest.mark.parametrize("column", [COPYEDIT, TRANSLATIONS, READY])
+    def test_merge_publishes(self, column: str) -> None:
+        assert on_merge(column) == PUBLISHED
 
     def test_merge_does_not_touch_a_published_card(self) -> None:
-        assert on_merge(PUBLISHED, open_translations=0) is None
+        assert on_merge(PUBLISHED) is None
 
 
 class TestMoveClassification:
@@ -315,7 +312,7 @@ class TestChecklists:
 
     def test_real_doc_covers_every_review_stage_and_translations(self) -> None:
         parsed = parse_checklists(CHECKLIST_DOC.read_text(encoding="utf-8"))
-        for column in (EDITORIAL, TECHNICAL, COPYEDIT, TRANSLATIONS):
+        for column in (EDITORIAL, TECHNICAL, COPYEDIT, TRANSLATIONS, READY):
             assert parsed.get(column, "").strip(), f"no checklist for {column}"
 
 
@@ -399,11 +396,21 @@ class TestReconcile:
         assert plan.move_to is None
         assert not plan.close
 
-    def test_translation_reaching_published_checks_its_parent(self) -> None:
+    def test_translation_reaching_published_closes_only_itself(self) -> None:
+        plan = reconcile_card(snap(PUBLISHED, synced=READY, labels=("blog", "l10n")))
+        assert plan.close
+        assert plan.move_to is None
+
+    def test_ready_to_publish_to_published_is_not_flagged(self) -> None:
+        plan = reconcile_card(snap(PUBLISHED, synced=READY))
+        assert plan.flags == ()
+
+    def test_skipping_translations_is_not_flagged(self) -> None:
+        """Translations is not a review stage, so a post may skip it."""
         plan = reconcile_card(
-            snap(PUBLISHED, synced=TRANSLATIONS, labels=("blog", "l10n"))
+            snap(READY, synced=COPYEDIT, labels=("blog", "tech-verified"))
         )
-        assert plan.check_parent
+        assert plan.flags == ()
 
     def test_card_with_no_column_is_left_alone(self) -> None:
         assert reconcile_card(snap(None, synced="")).is_empty()
@@ -415,30 +422,8 @@ class TestReconcile:
         assert plan.flags == ()
 
 
-class TestParentPublishing:
-    """When a post moves to Published because its translations finished."""
-
-    def test_all_translations_closed_and_pr_merged(self) -> None:
-        assert parent_should_publish(TRANSLATIONS, 0, 3, PrState.MERGED)
-
-    def test_all_translations_closed_and_no_pr(self) -> None:
-        assert parent_should_publish(TRANSLATIONS, 0, 2, PrState.NONE)
-
-    def test_draft_pr_still_open_holds_it(self) -> None:
-        """The English post merges at publication. Until then, it waits."""
-        assert not parent_should_publish(TRANSLATIONS, 0, 2, PrState.OPEN)
-
-    def test_a_translation_still_open_holds_it(self) -> None:
-        assert not parent_should_publish(TRANSLATIONS, 1, 2, PrState.MERGED)
-
-    def test_no_translations_at_all_is_a_human_decision(self) -> None:
-        assert not parent_should_publish(TRANSLATIONS, 0, 0, PrState.MERGED)
-
-    def test_only_from_translations(self) -> None:
-        assert not parent_should_publish(COPYEDIT, 0, 2, PrState.MERGED)
-
-
 class TestStageLabel:
     def test_slug(self) -> None:
         assert stage_label(EDITORIAL) == "stage:editorial-review"
         assert stage_label(COPYEDIT) == "stage:copyedit"
+        assert stage_label(READY) == "stage:ready-to-publish"

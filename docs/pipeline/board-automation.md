@@ -27,10 +27,8 @@ transition below is covered by `tests/test_board_stages.py`.
 | A draft PR opens, naming a post in Idea, Claimed, or Drafting | Editorial review |
 | A maintainer approves the PR while the card is in Editorial review | the next review stage the post requires |
 | A maintainer approves while the card is in Technical review | Copyedit |
-| A maintainer approves while the card is in Copyedit | Translations |
-| The PR merges, with no translation still open | Published |
-| The PR merges while a translation is still open | Translations, to wait |
-| The last translation of a merged post closes | Published |
+| A maintainer approves while the card is in Copyedit | Ready to publish |
+| The PR merges | Published |
 | A translation sub-issue is closed | Published (that translation's own card) |
 
 "The next review stage the post requires" depends on the post's route:
@@ -65,12 +63,8 @@ reviewed until someone approves.
 
 The draft PR stays open until the post is published, as
 [`content/README.md`](../../content/README.md#drafts) says. So a merge means
-that the English post is published, and the card goes to Published. If
-translations are still in progress, the card waits in Translations. It moves to
-Published when the last translation closes.
-
-For a post with no translations, the merge is what moves the card to
-Published. The translation rule never applies to it.
+that the post is published in its original language, and the card goes to
+Published. Open translations do not delay it.
 
 ## Naming the post in a PR
 
@@ -85,9 +79,8 @@ README used to tell authors to write `Refs #N`, so a description with exactly
 one `Refs #N` also counts. A description with several `Refs` lines and no
 `Post:` line is ambiguous, and the automation does not use it.
 
-Do **not** use `Fixes #N` or another closing keyword for the post. It would
-close the post's issue when the PR merges, possibly while translations are
-still in progress.
+Do **not** use `Fixes #N` or another closing keyword for the post. The
+automation closes the post's issue when the card reaches Published.
 
 A PR that adds files under `content/drafts/` but names no post gets one comment
 asking for the line. A PR that names an issue that is not a blog post gets one
@@ -141,15 +134,26 @@ open while it sits in Published, it is left alone rather than "restored".
 
 ## Translations
 
-Each translation is a **sub-issue** of the post it translates, one per
-language, labelled `l10n`. The board adds sub-issues automatically, and the
-router puts an `l10n` issue in Translations. A translation has no review stages
-of its own.
+A post and its translations move separately. The post publishes when it is
+ready, and each translation publishes when it is ready.
 
-Close a translation's issue when it is published, or move its card to
-Published, which closes it. In both cases, the automation then checks the post:
-if its draft PR has merged and every translation is closed, the post moves to
-Published.
+Each translation is a **sub-issue** of the post, one per language. Its title
+starts with `[l10n:<code>]`, such as `[l10n:zh]`, and it has the labels `l10n`
+and `lang:<code>`. The editor opens these sub-issues when the post reaches
+Ready to publish. The board adds sub-issues automatically, and the router
+puts an `l10n` issue in Translations. A translation has no review stages.
+
+A translation card moves Translations → Ready to publish → Published. Close
+its issue when the translation is published, or move its card to Published,
+which closes it. Before you close it, link the translation to the original
+post in WordPress, so that readers can switch languages.
+
+The post's card shows how many of its translations are finished in the
+**Sub-issues progress** column. To see the work for one language, filter the
+board by its label, for example `label:lang:zh`.
+
+A post written first in another language works the same way. The original
+is the post, and English is one of its translations.
 
 ## What you can change on the board without touching code
 

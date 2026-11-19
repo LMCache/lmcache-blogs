@@ -39,7 +39,7 @@ carry no AI co-author trailers. AGENTS.md has the full table.
 | [`docs/pipeline/stage-checklists.md`](docs/pipeline/stage-checklists.md) | The checklist posted when a card enters each column. Headings must match column names exactly. |
 | [`.github/ISSUE_TEMPLATE/blog-post.md`](.github/ISSUE_TEMPLATE/blog-post.md) | The skeleton. Its `##` headings are the parser's schema. |
 | [`.github/ISSUE_TEMPLATE/blog-post-draft.md`](.github/ISSUE_TEMPLATE/blog-post-draft.md) | A written post whose technical content still needs checking. Goes through Technical review. |
-| [`.github/ISSUE_TEMPLATE/blog-post-complete.md`](.github/ISSUE_TEMPLATE/blog-post-complete.md) | A written post that is already technically sound. Copyedit, then Translations; skips Technical review. The usual case for a written post. |
+| [`.github/ISSUE_TEMPLATE/blog-post-complete.md`](.github/ISSUE_TEMPLATE/blog-post-complete.md) | A written post that is already technically sound. Copyedit, then Ready to publish; skips Technical review. The usual case for a written post. |
 
 When you change one of these, check whether the others need the same change.
 The process doc, the template, and the parse contract describe one agreement,

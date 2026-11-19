@@ -43,17 +43,14 @@ import sys
 from board_router import board_location, graphql, handle_issue, run_gh
 from board_stages import (
     PUBLISHED,
-    TRANSLATION_LABEL,
     CardPlan,
     CardSnapshot,
-    PrState,
     Route,
     after_approval,
     approval_counts,
     describe_flags,
     on_merge,
     on_pr_opened,
-    parent_should_publish,
     parse_checklists,
     parse_post_ref,
     reconcile_card,
@@ -352,47 +349,6 @@ def load_prs(run: Run) -> list[dict]:
     return run.prs
 
 
-def pr_state_for(run: Run, post: int) -> PrState:
-    """Return the state of the draft PR that names ``post``.
-
-    An open PR wins over a merged one: a post with a follow-up PR still open is
-    not finished.
-
-    Args:
-        run: The run.
-        post: The post's issue number.
-
-    Returns:
-        The state.
-    """
-    state = PrState.NONE
-    for pr in load_prs(run):
-        ref = parse_post_ref(pr.get("body") or "", run.repo)
-        if ref is None or ref.number != post:
-            continue
-        if pr["state"] == "open":
-            return PrState.OPEN
-        if pr.get("merged_at"):
-            state = PrState.MERGED
-    return state
-
-
-def translation_counts(run: Run, post: int) -> tuple[int, int]:
-    """Count a post's translation sub-issues.
-
-    Args:
-        run: The run.
-        post: The post's issue number.
-
-    Returns:
-        (open, total) translation sub-issues.
-    """
-    subs = _api(f"repos/{run.repo}/issues/{post}/sub_issues?per_page=100")
-    rows = subs if isinstance(subs, list) else []
-    l10n = [s for s in rows if any(x["name"] == TRANSLATION_LABEL for x in s["labels"])]
-    return sum(1 for s in l10n if s["state"] == "open"), len(l10n)
-
-
 # Writes ----------------------------------------------------------------------
 
 
@@ -615,27 +571,9 @@ def move_card(
             checklist=column,
             flags=flags,
             close=publishing and card.is_open,
-            check_parent=publishing and route_for(card.labels) is Route.TRANSLATION,
         ),
         why,
     )
-    if publishing and card.parent and route_for(card.labels) is Route.TRANSLATION:
-        check_parent(run, card.parent)
-
-
-def check_parent(run: Run, post: int) -> None:
-    """Publish a post whose last translation just finished, if it is ready.
-
-    Args:
-        run: The run.
-        post: The post's issue number.
-    """
-    card = run.cards.get(post)
-    if card is None:
-        return
-    open_count, total = translation_counts(run, post)
-    if parent_should_publish(card.status, open_count, total, pr_state_for(run, post)):
-        move_card(run, card, PUBLISHED, f"all {total} translation(s) closed")
 
 
 # PR handling -----------------------------------------------------------------
@@ -645,8 +583,8 @@ def advance_from_pr(run: Run, pr: dict) -> None:
     """Apply what one draft PR implies for its post's card.
 
     Opening starts review, a maintainer's approval after the card's last move
-    advances one stage, and a merge after the card's last move publishes it
-    (or parks it in Translations while a translation is open). At most one
+    advances one stage, and a merge after the card's last move publishes it.
+    Translations are separate cards and never delay the post. At most one
     approval counts per call, because each stage needs its own sign-off.
 
     Args:
@@ -664,8 +602,7 @@ def advance_from_pr(run: Run, pr: dict) -> None:
     if pr.get("merged_at"):
         if card.status_changed_at and pr["merged_at"] <= card.status_changed_at:
             return
-        open_count, _ = translation_counts(run, card.number)
-        target = on_merge(card.status, open_translations=open_count)
+        target = on_merge(card.status)
         if target:
             flags = describe_flags(route_for(card.labels), card.status or "", target)
             move_card(run, card, target, f"{label} merged", flags)
@@ -814,8 +751,6 @@ def handle_issue_event(repo: str, number: int, action: str, dry_run: bool) -> No
         return
     plan = reconcile_card(card.snapshot())
     apply_plan(run, card, plan, f"issue {action}")
-    if plan.check_parent and card.parent:
-        check_parent(run, card.parent)
 
 
 def reconcile(repo: str, dry_run: bool) -> None:
@@ -836,8 +771,6 @@ def reconcile(repo: str, dry_run: bool) -> None:
         plan = reconcile_card(card.snapshot())
         moved = bool(card.synced) and card.status != card.synced
         apply_plan(run, card, plan, "moved by hand" if moved else "recorded")
-        if plan.check_parent and card.parent:
-            check_parent(run, card.parent)
     for pr in load_prs(run):
         advance_from_pr(run, pr)
 

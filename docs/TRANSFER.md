@@ -84,11 +84,11 @@ gh api -X POST repos/quaid/lmcache-blogs/transfer -f new_owner=LMCache
         -F title="LMCache Blogs [Editorial Kanban]"
    ```
 
-   Confirm that the seven columns exist, in this order, with these exact
+   Confirm that the nine columns exist, in this order, with these exact
    names:
 
    ```
-   Idea → Claimed → Drafting → Editorial review → Technical review → Translations → Published
+   Idea → Claimed → Drafting → Editorial review → Technical review → Copyedit → Translations → Ready to publish → Published
    ```
 
    Link the board to `lmcache-blogs` and to no other repository. Links are not

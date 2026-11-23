@@ -1,0 +1,31 @@
+meta-zh.txt — LMCache v0.5.8 图组（中文版），交本地化审核（Coco）
+
+术语表（"待确认" = 新术语，请审核）
+KV cache -> KV cache（保留英文）
+LMCache MP server -> LMCache MP 服务端
+coordinator -> MP 协调器（待确认，沿用表中"MP coordinator"）
+dashboard / frontend dashboard -> 前端仪表盘（待确认，新）
+API keys · optional · one set -> API 密钥 · 可选 · 同一组（待确认，新）
+general arrangement -> 总图
+upgrade: before and after -> 升级：前后对照（待确认，新）
+setting / what to do -> 设置 / 操作（待确认，新）
+hybrid models only -> 仅影响混合模型（待确认，新）
+linear-attention hybrids -> 线性注意力混合模型（待确认，新）
+declared / discovered -> 已声明 / 已发现（待确认，新）
+existing HTTP API key -> 已有的 HTTP API 密钥（待确认，新）
+Unix sockets -> Unix 套接字（待确认，新）
+off / on -> 关 / 开
+图框：SHEET n -> 图 n；SCALE -> 比例；NTS -> 示意；REV -> 版本
+不翻译：vLLM、SGLang、LMCacheMPConnector、ZMQ、gRPC、auto、native、aio、L1、L2、HTTP API、lmcache-nixl、LMCache_inprocess、所有命令行参数和环境变量
+
+图 1：images-zh/lmcache-v0-5-8-release-sheet-1-general-arrangement-zh.svg（及 -zh@2x.png、-zh-1200x630.png）
+位置：/zh/ 版正文首图，在第一段之前；1200x630 PNG 作为 og:image
+图注：在 v0.5.8 中，LMCache 只以独立的 MP 服务端运行，vLLM 通过 LMCacheMPConnector 连接它。三角形标出了本版本的变化：ZMQ、gRPC 和 HTTP API 共用一组可选的 API 密钥；gRPC 服务端模式默认为 auto；MP 协调器默认只监听 127.0.0.1；lmcache-nixl 和 LMCache_inprocess 改为独立的包。
+替代文本：LMCache v0.5.8 总图，以蓝线工程图样式绘制。左侧是标有 vLLM 的推理引擎框，框内有一个标有 LMCacheMPConnector 的框。两条朱红色请求线分别标有 ZMQ 和 gRPC · auto，从连接器通向双线框“LMCache MP 服务端”上的两个开放端口。服务端内部，标有 L1 的层以朱红色网点填充，标有 L2 的层以青色网点填充。服务端上的第三个开放端口引出一条标有 HTTP API 的线，向下连到标有“前端仪表盘”的框。一根竖杆穿过三把钥匙（钥匙环为虚线），分别位于 ZMQ、gRPC 和 HTTP API 端口旁边，上方注有“API 密钥 · 可选 · 同一组”。右侧是标有“MP 协调器”的框，注有 --host 127.0.0.1，通过一个开放端口连到服务端。标有 lmcache-nixl 的虚线框作为独立部件连到服务端。标有 LMCache_inprocess 的虚线框位于推理引擎下方，不与任何部件相连。五个小三角形标出 v0.5.8 的五项变化：API 密钥、gRPC auto 模式、协调器监听地址、lmcache-nixl 和 LMCache_inprocess。图框标注为 LMCACHE、总图、图 1、比例示意、版本 0.5.8。
+媒体库描述：《LMCache v0.5.8: One Multiprocess Architecture, and API Keys for ZMQ and gRPC》LMCache 蓝线图组的图 1（题图兼正文首图）。v0.5.8 总图：vLLM 通过 LMCacheMPConnector，经 ZMQ 或 gRPC 连接带 L1、L2 层的 LMCache MP 服务端；HTTP API 与前端仪表盘；监听 --host 127.0.0.1 的 MP 协调器；可选的 API 密钥（同一组）；以及独立的 lmcache-nixl 和 LMCache_inprocess 包。
+
+图 2：images-zh/lmcache-v0-5-8-release-sheet-2-upgrade-defaults-zh.svg（及 -zh@2x.png）
+位置："运维升级说明"标题下，"升级前请检查以下各项："之后、列表之前
+图注：如果升级到 v0.5.8 时不改任何配置，以下五项行为会发生变化。最后一列说明应如何操作。其他升级事项见下方列表。
+替代文本：表格，标题为“升级：前后对照”。表格对比不改任何配置时 v0.5.7.post1 与 v0.5.8 的行为，并给出每一行的操作。MP 协调器 --host：以前为 0.0.0.0，现在为 127.0.0.1；请设为远程 MP 服务端可以访问的地址，并先启用 API 密钥。--grpc-server-mode：以前为 sync，现在为 auto，会选择 native 或 aio；传入 --grpc-server-mode sync 可恢复旧模式。--separate-object-groups，仅影响混合模型：以前关闭，现在开启；--no-separate-object-groups 可关闭它，但 Mamba 和线性注意力混合模型请保留默认值。已有的 HTTP API 密钥：以前只在 HTTP 上检查，现在在 HTTP、ZMQ 和 gRPC 上检查；请在客户端设置 LMCACHE_API_KEY_FILE 或 LMCACHE_API_KEY。前端仪表盘 Unix 套接字：以前包括已声明和已发现的路径，现在仅限已声明的路径；用 --uds-allowlist 添加已发现的路径。v0.5.8 一列为双线框，表头有一个小三角形。图框标注为 LMCACHE、升级：前后对照、图 2、比例示意、版本 0.5.8。
+媒体库描述：《LMCache v0.5.8: One Multiprocess Architecture, and API Keys for ZMQ and gRPC》LMCache 蓝线图组的图 2。升级对照表，v0.5.7.post1 与 v0.5.8，附每一行的操作：MP 协调器 --host（0.0.0.0 改为 127.0.0.1）、--grpc-server-mode（sync 改为 auto）、--separate-object-groups（关改为开）、HTTP API 密钥现在也在 ZMQ 和 gRPC 上检查、前端仪表盘 Unix 套接字仅限已声明路径（--uds-allowlist）。
